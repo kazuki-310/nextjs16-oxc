@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "ignorePatterns": [],
-  "plugins": ["react", "react-perf", "import", "jsx-a11y", "promise"],
+  "plugins": ["react", "react-perf", "import", "jsx-a11y", "promise", "typescript"],
   "env": {
     "node": true,
     "browser": true
@@ -10,7 +10,8 @@
     "correctness": "error"
   },
   "rules": {
-    "no-default-export": "error"
+    "no-default-export": "error",
+    "typescript/explicit-function-return-type": ["error"]
   },
   "overrides": [
     {
@@ -20,7 +21,10 @@
         "loading.tsx",
         "error.tsx",
         "not-found.tsx",
-        "next.config.ts"
+        "next.config.ts",
+        "vitest.config.ts",
+        "playwright.config.ts",
+        "postcss.config.mjs"
       ],
       "rules": {
         "no-default-export": "off"
