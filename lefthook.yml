@@ -17,3 +17,5 @@ pre-push:
       run: pnpm lint
     fmt:
       run: pnpm fmt:check
+    test:
+      run: pnpm test:run
