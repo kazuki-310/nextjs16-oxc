@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": [],
+  "plugins": ["react", "react-perf", "import", "jsx-a11y", "promise"],
+  "env": {
+    "node": true,
+    "browser": true
+  },
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "no-default-export": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "page.tsx",
+        "layout.tsx",
+        "loading.tsx",
+        "error.tsx",
+        "not-found.tsx",
+        "next.config.ts"
+      ],
+      "rules": {
+        "no-default-export": "off"
+      }
+    }
+  ]
+}

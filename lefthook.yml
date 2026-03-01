@@ -1,0 +1,19 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: "*.{js,jsx,ts,tsx}"
+      run: pnpm lint -- {staged_files}
+    format:
+      glob: "*.{js,jsx,ts,tsx,json,css}"
+      run: pnpm fmt -- {staged_files}
+
+pre-push:
+  parallel: true
+  commands:
+    type-check:
+      run: pnpm type-check
+    lint:
+      run: pnpm lint
+    fmt:
+      run: pnpm fmt:check
