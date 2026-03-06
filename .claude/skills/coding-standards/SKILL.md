@@ -146,14 +146,48 @@ import "server-only";
 ### Tailwind CSS v4
 
 - Tailwind CSS v4 を使用（PostCSS 経由）
-- クラスは Tailwind のユーティリティクラスを使用
+- クラスの結合には `cn()` ヘルパーを使う（`@/lib/utils`）
 - ダークモードは `dark:` バリアントで対応
 
 ```tsx
-// Good
-<button className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 transition">
-  Submit
-</button>
+import { cn } from "@/lib/utils";
+
+<div className={cn("rounded-lg px-4 py-2", isActive && "bg-primary text-primary-foreground")} />;
+```
+
+### shadcn/ui
+
+UI コンポーネントライブラリとして **shadcn/ui**（new-york スタイル）を使用する。
+
+#### コンポーネントの追加
+
+```bash
+pnpm dlx shadcn add <component-name>
+# 例: pnpm dlx shadcn add button dialog table
+```
+
+追加されたコンポーネントは `src/components/ui/` に配置される。
+
+#### 使い方
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+<Button variant="outline" size="sm">
+  保存
+</Button>;
+```
+
+#### アイコン
+
+アイコンは **lucide-react** を使う。
+
+```tsx
+import { Pencil, Trash2 } from "lucide-react";
+
+<Button size="icon">
+  <Pencil />
+</Button>;
 ```
 
 ## テスト
