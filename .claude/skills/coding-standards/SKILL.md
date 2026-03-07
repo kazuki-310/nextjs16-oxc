@@ -147,7 +147,6 @@ import "server-only";
 
 - Tailwind CSS v4 を使用（PostCSS 経由）
 - クラスの結合には `cn()` ヘルパーを使う（`@/lib/utils`）
-- ダークモードは `dark:` バリアントで対応
 
 ```tsx
 import { cn } from "@/lib/utils";
