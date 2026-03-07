@@ -15,6 +15,12 @@
   },
   "overrides": [
     {
+      "files": ["src/components/ui/*.tsx", "src/hooks/*.ts"],
+      "rules": {
+        "typescript/explicit-function-return-type": "off"
+      }
+    },
+    {
       "files": [
         "page.tsx",
         "layout.tsx",

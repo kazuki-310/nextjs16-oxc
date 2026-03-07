@@ -4,9 +4,9 @@ import { useState } from "react";
 import { type VisibilityState } from "@tanstack/react-table";
 import { useQueryStates } from "nuqs";
 import { AdDataTable } from "./ad-data-table";
-import { ColumnVisibilityControl } from "./column-visibility-control";
-import { tableConfigs, tableData } from "../_lib/constants";
-import { filterParsers } from "../_lib/schema";
+import { ColumnVisibilityControl } from "../../_components/column-visibility-control";
+import { tableConfigs, tableData } from "../../_lib/constants";
+import { filterParsers } from "../../_lib/schema";
 
 export function TablesContent(): React.JSX.Element {
   const [{ name, minImpressions, minConversions }] = useQueryStates(filterParsers);

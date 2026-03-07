@@ -9,16 +9,9 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import type { AdRow } from "../_lib/constants";
-import { columns } from "./columns";
+import { TableCell, TableHead, TableRow } from "@/components/ui/table";
+import type { AdRow } from "../../_lib/constants";
+import { columns } from "../../_components/columns";
 
 type AdDataTableProps = {
   title: string;
@@ -55,9 +48,8 @@ export function AdDataTable({
       <h2 className="text-sm font-semibold text-foreground">{title}</h2>
 
       <div className="max-h-[660px] overflow-auto rounded-md border">
-        <Table>
-          {/* sticky header */}
-          <TableHeader className="sticky top-0 z-20 bg-background">
+        <table className="w-full caption-bottom text-sm">
+          <thead className="sticky top-0 z-20 bg-background [&_tr]:border-b">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -79,8 +71,8 @@ export function AdDataTable({
                 })}
               </TableRow>
             ))}
-          </TableHeader>
-          <TableBody>
+          </thead>
+          <tbody className="[&_tr:last-child]:border-0">
             {table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() ? "selected" : undefined}>
@@ -108,8 +100,8 @@ export function AdDataTable({
                 </TableCell>
               </TableRow>
             )}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </div>
     </section>
   );

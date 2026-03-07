@@ -31,7 +31,7 @@ export type AdRow = {
 };
 
 // --------------------------------
-// Mock data (30 rows, deterministic)
+// Mock data (90 rows, deterministic)
 // --------------------------------
 
 export const tableData: AdRow[] = Array.from({ length: 90 }, (_, i) => {

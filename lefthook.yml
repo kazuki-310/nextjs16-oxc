@@ -9,13 +9,6 @@ pre-commit:
       run: pnpm fmt -- {staged_files}
 
 pre-push:
-  parallel: true
   commands:
-    type-check:
-      run: pnpm type-check
-    lint:
-      run: pnpm lint
-    fmt:
-      run: pnpm fmt:check
-    test:
-      run: pnpm test:run
+    check:
+      run: pnpm check
