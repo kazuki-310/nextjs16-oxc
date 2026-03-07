@@ -61,9 +61,13 @@ export function AdDataTableVirtual({
   const paddingBottom =
     virtualItems.length > 0 ? totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0) : 0;
 
+  const headingId = `table-heading-${title.replace(/\s+/g, "-")}`;
+
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+    <section aria-labelledby={headingId} className="flex flex-col gap-2">
+      <h2 id={headingId} className="text-sm font-semibold text-foreground">
+        {title}
+      </h2>
 
       <div ref={scrollRef} className="max-h-[660px] overflow-auto rounded-md border">
         <table className="w-full caption-bottom text-sm">

@@ -43,9 +43,13 @@ export function AdDataTable({
     state: { sorting, columnVisibility },
   });
 
+  const headingId = `table-heading-${title.replace(/\s+/g, "-")}`;
+
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+    <section aria-labelledby={headingId} className="flex flex-col gap-2">
+      <h2 id={headingId} className="text-sm font-semibold text-foreground">
+        {title}
+      </h2>
 
       <div className="max-h-[660px] overflow-auto rounded-md border">
         <table className="w-full caption-bottom text-sm">
