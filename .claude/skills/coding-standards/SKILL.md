@@ -17,6 +17,7 @@ user-invocable: false
 - **Linter**: oxlint（`pnpm lint` / `pnpm lint:fix`）
 - **Formatter**: oxfmt（`pnpm fmt` / `pnpm fmt:check`）
 - **型チェック**: `pnpm type-check`
+- **まとめて実行**: `pnpm check`（ファイル変更後は必ず実行）
 
 ## ファイル・ディレクトリ命名規則
 
@@ -79,6 +80,27 @@ client.tsx / component.tsx
 post-form.tsx / user-profile-card.tsx
 ```
 
+### key prop
+
+リストレンダリングでは **安定した一意な ID** を `key` に使う。配列の index は使わない。
+
+```tsx
+// NG: index をキーに使うとリスト並び替え・フィルタ時にバグが起きる
+{
+  items.map((item, index) => <li key={index}>{item.name}</li>);
+}
+
+// Good: 安定した一意 ID を使う
+{
+  items.map((item) => <li key={item.id}>{item.name}</li>);
+}
+
+// エラーメッセージなど一意な文字列が使える場合
+{
+  errors.map((error) => <li key={error.message}>{error.message}</li>);
+}
+```
+
 ### React Compiler
 
 このプロジェクトは `reactCompiler: true` が有効。
@@ -92,6 +114,28 @@ post-form.tsx / user-profile-card.tsx
 - 適切な依存配列を指定
 
 ## Next.js App Router
+
+### metadata（SEO）
+
+すべての `page.tsx` には `metadata` または `generateMetadata` を必ず export する。
+
+```tsx
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "ページタイトル",
+  description: "ページの説明文。",
+};
+```
+
+動的なメタデータが必要な場合：
+
+```tsx
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const post = await getPost(params.id);
+  return { title: post.title };
+}
+```
 
 ### cacheComponents
 
@@ -122,7 +166,29 @@ async function getData() {
 - インタラクティブな機能（クリック、フォーム送信）
 - 状態管理（`useState`, `useReducer`）
 - ブラウザ API（`localStorage`, `window` など）
-- ブラウザ API や React hooks を使う場合
+- React hooks を使う場合（`useQueryStates` など）
+
+## URL 状態管理（nuqs）
+
+URL クエリパラメータの状態管理には **nuqs** を使用する。
+
+```ts
+// _lib/schema.ts — パーサー定義
+import { parseAsInteger, parseAsString } from "nuqs/server";
+
+export const filterParsers = {
+  name: parseAsString.withDefault(""),
+  minImpressions: parseAsInteger.withDefault(0),
+};
+```
+
+```tsx
+// Client Component で使用
+import { useQueryStates } from "nuqs";
+import { filterParsers } from "../_lib/schema";
+
+const [params, setParams] = useQueryStates(filterParsers);
+```
 
 ## Server Actions
 

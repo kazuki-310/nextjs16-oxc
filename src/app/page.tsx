@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { PostForm } from "./_components/post-form";
+
+export const metadata: Metadata = {
+  title: "Create Post",
+  description: "Fill in the details below to create a new post.",
+};
 
 export default function Page(): React.JSX.Element {
   return (

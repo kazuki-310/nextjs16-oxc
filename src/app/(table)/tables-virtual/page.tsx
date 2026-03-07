@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { FilterForm } from "../_components/filter-form";
 import { TablesContentVirtual } from "./_components/tables-content-virtual";
+
+export const metadata: Metadata = {
+  title: "広告レポート一覧（仮想化）",
+  description: "仮想スクロールを使った広告レポートの一覧を確認・フィルタリングできます。",
+};
 
 export default function Page(): React.JSX.Element {
   return (

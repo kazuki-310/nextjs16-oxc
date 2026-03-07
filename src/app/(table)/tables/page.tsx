@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { FilterForm } from "../_components/filter-form";
 import { TablesContent } from "./_components/tables-content";
+
+export const metadata: Metadata = {
+  title: "広告レポート一覧",
+  description: "広告レポートの一覧を確認・フィルタリングできます。",
+};
 
 export default function Page(): React.JSX.Element {
   return (
