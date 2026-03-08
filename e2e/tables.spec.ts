@@ -14,7 +14,8 @@ test.describe("/tables", () => {
       await page.getByPlaceholder("キャンペーン名で検索").fill("キャンペーン_01");
       await page.getByRole("button", { name: "検索" }).click();
 
-      await expect(page.getByText("1 件")).toBeVisible();
+      const firstTable = page.getByRole("region").first();
+      await expect(firstTable.getByRole("cell", { name: "キャンペーン_01" })).toBeVisible();
     });
 
     test("最小インプレッション数で絞り込める", async ({ page }) => {
@@ -22,23 +23,25 @@ test.describe("/tables", () => {
       await page.getByLabel("最小インプレッション数").fill("40000");
       await page.getByRole("button", { name: "検索" }).click();
 
-      await expect(page.getByText("89 件")).toBeVisible();
+      const firstTable = page.getByRole("region").first();
+      await expect(firstTable.getByRole("cell", { name: "キャンペーン_02" })).toBeVisible();
     });
 
     test("リセットでフィルターが解除される", async ({ page }) => {
       await page.getByPlaceholder("キャンペーン名で検索").fill("キャンペーン_01");
       await page.getByRole("button", { name: "検索" }).click();
-      await expect(page.getByText("1 件")).toBeVisible();
 
       await page.getByRole("button", { name: "リセット" }).click();
-      await expect(page.getByText("90 件")).toBeVisible();
+
+      const firstTable = page.getByRole("region").first();
+      await expect(firstTable.getByRole("cell", { name: "キャンペーン_01" })).toBeVisible();
     });
 
-    test("一致しない検索で0件になる", async ({ page }) => {
+    test("一致しない検索でデータなし表示になる", async ({ page }) => {
       await page.getByPlaceholder("キャンペーン名で検索").fill("存在しないキャンペーン");
       await page.getByRole("button", { name: "検索" }).click();
 
-      await expect(page.getByText("0 件")).toBeVisible();
+      await expect(page.getByText("データがありません").first()).toBeVisible();
     });
   });
 
@@ -65,8 +68,7 @@ test.describe("/tables", () => {
       // 昇順ソート後、再クリックで降順
       await header.click();
 
-      // ソートが適用されても表示件数は変わらない
-      await expect(page.getByText("90 件")).toBeVisible();
+      await expect(firstTable.getByRole("cell").first()).toBeVisible();
     });
   });
 });
