@@ -14,7 +14,7 @@ import { TableCell, TableHead, TableRow } from "@/components/ui/table";
 import type { AdRow } from "../../_lib/constants";
 import { columns } from "../../_components/columns";
 
-type AdDataTableVirtualProps = {
+type Props = {
   title: string;
   data: AdRow[];
   columnVisibility: VisibilityState;
@@ -29,7 +29,7 @@ export function AdDataTableVirtual({
   data,
   columnVisibility,
   onColumnVisibilityChange,
-}: AdDataTableVirtualProps): React.JSX.Element {
+}: Props): React.JSX.Element {
   const [sorting, setSorting] = useState<SortingState>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 

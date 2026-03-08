@@ -1,16 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useQueryState, useQueryStates, parseAsArrayOf, parseAsString } from "nuqs";
 import { type VisibilityState } from "@tanstack/react-table";
-import { useQueryStates } from "nuqs";
 import { AdDataTable } from "./ad-data-table";
-import { ColumnVisibilityControl } from "../../_components/column-visibility-control";
-import { tableConfigs, tableData } from "../../_lib/constants";
 import { filterParsers } from "../../_lib/schema";
+import { columnDefs } from "../../_components/columns";
+import type { AdData } from "../../_server-functions/fetchers/get-ad-data";
 
-export function TablesContent(): React.JSX.Element {
+type Props = AdData;
+
+export function TablesContent({ tableData, tableConfigs }: Props): React.JSX.Element {
   const [{ name, minImpressions, minConversions }] = useQueryStates(filterParsers);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [hiddenColumns, setHiddenColumns] = useQueryState(
+    "hidden",
+    parseAsArrayOf(parseAsString).withDefault([]),
+  );
+
+  const columnVisibility: VisibilityState = Object.fromEntries(
+    columnDefs.map(({ key }) => [key, !hiddenColumns.includes(key)]),
+  );
+
+  const handleColumnVisibilityChange = (visibility: VisibilityState): void => {
+    const hidden = Object.entries(visibility)
+      .filter(([, visible]) => !visible)
+      .map(([key]) => key);
+    void setHiddenColumns(hidden);
+  };
 
   const filteredData = tableData.filter((row) => {
     if (name && !row.name.toLowerCase().includes(name.toLowerCase())) return false;
@@ -21,18 +36,13 @@ export function TablesContent(): React.JSX.Element {
 
   return (
     <>
-      <ColumnVisibilityControl
-        columnVisibility={columnVisibility}
-        onColumnVisibilityChange={setColumnVisibility}
-      />
-      <p className="text-sm text-muted-foreground">{filteredData.length} 件</p>
       {tableConfigs.map((config) => (
         <AdDataTable
           key={config.id}
           title={config.title}
           data={filteredData}
           columnVisibility={columnVisibility}
-          onColumnVisibilityChange={setColumnVisibility}
+          onColumnVisibilityChange={handleColumnVisibilityChange}
         />
       ))}
     </>

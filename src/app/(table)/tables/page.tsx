@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { FilterForm } from "../_components/filter-form";
-import { TablesContent } from "./_components/tables-content";
+import { ColumnVisibilityControl } from "../_components/column-visibility-control";
+import { TablesContainer } from "./_components/tables-container";
+import { TablesLoadingFallback } from "../_components/tables-loading-fallback";
 
 export const metadata: Metadata = {
   title: "広告レポート一覧",
@@ -14,7 +16,10 @@ export default function Page(): React.JSX.Element {
       <h1 className="text-xl font-bold">広告レポート一覧</h1>
       <Suspense>
         <FilterForm />
-        <TablesContent />
+        <ColumnVisibilityControl />
+      </Suspense>
+      <Suspense fallback={<TablesLoadingFallback />}>
+        <TablesContainer />
       </Suspense>
     </main>
   );

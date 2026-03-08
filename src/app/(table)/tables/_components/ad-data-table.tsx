@@ -13,7 +13,7 @@ import { TableCell, TableHead, TableRow } from "@/components/ui/table";
 import type { AdRow } from "../../_lib/constants";
 import { columns } from "../../_components/columns";
 
-type AdDataTableProps = {
+type Props = {
   title: string;
   data: AdRow[];
   columnVisibility: VisibilityState;
@@ -27,7 +27,7 @@ export function AdDataTable({
   data,
   columnVisibility,
   onColumnVisibilityChange,
-}: AdDataTableProps): React.JSX.Element {
+}: Props): React.JSX.Element {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({

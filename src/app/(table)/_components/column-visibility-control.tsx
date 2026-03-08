@@ -1,26 +1,23 @@
 "use client";
 
-import { type VisibilityState } from "@tanstack/react-table";
+import { useQueryState, parseAsArrayOf, parseAsString } from "nuqs";
 import { Switch } from "@/components/ui/switch";
 import { columnDefs } from "./columns";
 
-type ColumnVisibilityControlProps = {
-  columnVisibility: VisibilityState;
-  onColumnVisibilityChange: (visibility: VisibilityState) => void;
-};
+export function ColumnVisibilityControl(): React.JSX.Element {
+  const [hiddenColumns, setHiddenColumns] = useQueryState(
+    "hidden",
+    parseAsArrayOf(parseAsString).withDefault([]),
+  );
 
-export function ColumnVisibilityControl({
-  columnVisibility,
-  onColumnVisibilityChange,
-}: ColumnVisibilityControlProps): React.JSX.Element {
   const toggle = (key: string, checked: boolean): void => {
-    onColumnVisibilityChange({ ...columnVisibility, [key]: checked });
+    void setHiddenColumns((prev) => (checked ? prev.filter((k) => k !== key) : [...prev, key]));
   };
 
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-2 rounded-lg border bg-card p-4">
       {columnDefs.map(({ key, label }) => {
-        const isVisible = columnVisibility[key] !== false;
+        const isVisible = !hiddenColumns.includes(key);
         return (
           <div key={key} className="flex items-center gap-1.5">
             <Switch

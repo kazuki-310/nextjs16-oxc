@@ -1,6 +1,41 @@
-import { type ColumnDef } from "@tanstack/react-table";
+import { type Column, type ColumnDef } from "@tanstack/react-table";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { type AdRow } from "../_lib/constants";
-import { DataTableColumnHeader } from "./data-table-column-header";
+
+type DataTableColumnHeaderProps<TData, TValue> = {
+  column: Column<TData, TValue>;
+  title: string;
+};
+
+function DataTableColumnHeader<TData, TValue>({
+  column,
+  title,
+}: DataTableColumnHeaderProps<TData, TValue>): React.JSX.Element {
+  if (!column.getCanSort()) {
+    return <span className="text-sm font-medium">{title}</span>;
+  }
+
+  const sorted = column.getIsSorted();
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="-ml-3 h-8 gap-1"
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    >
+      {title}
+      {sorted === "asc" ? (
+        <ArrowUp className="size-3" />
+      ) : sorted === "desc" ? (
+        <ArrowDown className="size-3" />
+      ) : (
+        <ArrowUpDown className="size-3 text-muted-foreground" />
+      )}
+    </Button>
+  );
+}
 
 export const columnDefs: { key: keyof AdRow; label: string }[] = [
   { key: "name", label: "キャンペーン名" },

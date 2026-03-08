@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { FilterForm } from "../_components/filter-form";
-import { TablesContentVirtual } from "./_components/tables-content-virtual";
+import { ColumnVisibilityControl } from "../_components/column-visibility-control";
+import { TablesContainerVirtual } from "./_components/tables-container-virtual";
+import { TablesLoadingFallback } from "../_components/tables-loading-fallback";
 
 export const metadata: Metadata = {
   title: "広告レポート一覧（仮想化）",
@@ -14,7 +16,10 @@ export default function Page(): React.JSX.Element {
       <h1 className="text-xl font-bold">広告レポート一覧（仮想化）</h1>
       <Suspense>
         <FilterForm />
-        <TablesContentVirtual />
+        <ColumnVisibilityControl />
+      </Suspense>
+      <Suspense fallback={<TablesLoadingFallback />}>
+        <TablesContainerVirtual />
       </Suspense>
     </main>
   );

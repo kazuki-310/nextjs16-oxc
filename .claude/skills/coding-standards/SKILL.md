@@ -200,11 +200,17 @@ const [params, setParams] = useQueryStates(filterParsers);
 
 ### サーバー専用ユーティリティ（`server-only`）
 
-クライアントから誤って import されることを防ぐため `import 'server-only'` を付与する。
+- クライアントから呼ぶ Server Actions には `"use server"` ディレクティブを付ける
+- それ以外のサーバー側コード（fetchers など）はすべて `import "server-only"` を付ける
 
 ```ts
-// src/server-functions/_lib/utils.ts
+// actions（クライアントから呼ぶ）
+"use server";
+export async function createPost() { ... }
+
+// fetchers（RSC から呼ぶ）
 import "server-only";
+export async function getPosts() { ... }
 ```
 
 ## スタイリング
