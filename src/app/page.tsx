@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Box, Center, Paper, Text, Title } from "@mantine/core";
 import { PostForm } from "./_components/post-form";
 
 export const metadata: Metadata = {
@@ -8,20 +9,20 @@ export const metadata: Metadata = {
 
 export default function Page(): React.JSX.Element {
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+    <Center mih="100vh" p="md">
+      <Box w="100%" maw={512}>
+        <Box mb="xl">
+          <Title order={1} fz="2xl" fw={600}>
             Create Post
-          </h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          </Title>
+          <Text fz="sm" c="dimmed" mt={4}>
             Fill in the details below to create a new post.
-          </p>
-        </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
+          </Text>
+        </Box>
+        <Paper withBorder p="lg" radius="md">
           <PostForm />
-        </div>
-      </div>
-    </div>
+        </Paper>
+      </Box>
+    </Center>
   );
 }

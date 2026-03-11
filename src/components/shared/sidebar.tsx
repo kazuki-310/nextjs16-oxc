@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { Box, NavLink, Text } from "@mantine/core";
 
 const navItems = [
   { href: "/tables", label: "広告レポート" },
@@ -13,26 +13,38 @@ export function Sidebar(): React.JSX.Element {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-56 shrink-0 flex-col border-r bg-card">
-      <div className="border-b px-4 py-4">
-        <span className="text-sm font-semibold">広告管理</span>
-      </div>
-      <nav className="flex flex-col gap-1 p-2">
+    <Box
+      component="aside"
+      style={{
+        width: 224,
+        flexShrink: 0,
+        height: "100vh",
+        borderRight: "1px solid var(--mantine-color-default-border)",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Box
+        style={{
+          borderBottom: "1px solid var(--mantine-color-default-border)",
+          padding: "16px",
+        }}
+      >
+        <Text fw={600} fz="sm">
+          広告管理
+        </Text>
+      </Box>
+      <Box component="nav" p="xs">
         {navItems.map(({ href, label }) => (
-          <Link
+          <NavLink
             key={href}
+            component={Link}
             href={href}
-            className={cn(
-              "rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
-              pathname === href
-                ? "bg-accent font-medium text-accent-foreground"
-                : "text-muted-foreground",
-            )}
-          >
-            {label}
-          </Link>
+            label={label}
+            active={pathname === href}
+          />
         ))}
-      </nav>
-    </aside>
+      </Box>
+    </Box>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryState, parseAsArrayOf, parseAsString } from "nuqs";
-import { Switch } from "@/components/ui/switch";
+import { Group, Switch, Paper } from "@mantine/core";
 import { columnDefs } from "./columns";
 
 export function ColumnVisibilityControl(): React.JSX.Element {
@@ -15,23 +15,21 @@ export function ColumnVisibilityControl(): React.JSX.Element {
   };
 
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-2 rounded-lg border bg-card p-4">
-      {columnDefs.map(({ key, label }) => {
-        const isVisible = !hiddenColumns.includes(key);
-        return (
-          <div key={key} className="flex items-center gap-1.5">
+    <Paper withBorder p="md">
+      <Group gap="sm" wrap="wrap">
+        {columnDefs.map(({ key, label }) => {
+          const isVisible = !hiddenColumns.includes(key);
+          return (
             <Switch
-              id={`col-${key}`}
-              size="sm"
+              key={key}
+              label={label}
+              size="xs"
               checked={isVisible}
-              onCheckedChange={(checked) => toggle(key, checked)}
+              onChange={(e) => toggle(key, e.currentTarget.checked)}
             />
-            <label htmlFor={`col-${key}`} className="cursor-pointer text-sm">
-              {label}
-            </label>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </Group>
+    </Paper>
   );
 }

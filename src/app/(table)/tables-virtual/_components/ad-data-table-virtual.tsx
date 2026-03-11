@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRef, useState } from "react";
-import { TableCell, TableHead, TableRow } from "@/components/ui/table";
+import { Table, Text } from "@mantine/core";
 import type { AdRow } from "../../_lib/constants";
 import { columns } from "../../_components/columns";
 
@@ -64,37 +64,56 @@ export function AdDataTableVirtual({
   const headingId = `table-heading-${title.replace(/\s+/g, "-")}`;
 
   return (
-    <section aria-labelledby={headingId} className="flex flex-col gap-2">
-      <h2 id={headingId} className="text-sm font-semibold text-foreground">
+    <section aria-labelledby={headingId}>
+      <Text id={headingId} fz="sm" fw={600} mb="xs">
         {title}
-      </h2>
-
-      <div ref={scrollRef} className="max-h-[660px] overflow-auto rounded-md border">
-        <table className="w-full caption-bottom text-sm">
-          <thead className="sticky top-0 z-20 bg-background [&_tr]:border-b">
+      </Text>
+      <div
+        ref={scrollRef}
+        style={{
+          maxHeight: 660,
+          overflow: "auto",
+          border: "1px solid var(--mantine-color-default-border)",
+          borderRadius: "var(--mantine-radius-sm)",
+        }}
+      >
+        <Table withColumnBorders highlightOnHover>
+          <Table.Thead
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 20,
+              background: "var(--mantine-color-body)",
+            }}
+          >
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <Table.Tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const isSticky = header.column.id === STICKY_COLUMN_ID;
                   return (
-                    <TableHead
+                    <Table.Th
                       key={header.id}
-                      className={
+                      style={
                         isSticky
-                          ? "sticky left-0 z-30 bg-background shadow-[1px_0_0_0_hsl(var(--border))]"
+                          ? {
+                              position: "sticky",
+                              left: 0,
+                              zIndex: 30,
+                              background: "var(--mantine-color-body)",
+                            }
                           : undefined
                       }
                     >
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
+                    </Table.Th>
                   );
                 })}
-              </TableRow>
+              </Table.Tr>
             ))}
-          </thead>
-          <tbody className="[&_tr:last-child]:border-0">
+          </Table.Thead>
+          <Table.Tbody>
             {rows.length > 0 ? (
               <>
                 {paddingTop > 0 && (
@@ -105,26 +124,28 @@ export function AdDataTableVirtual({
                 {virtualItems.map((virtualRow) => {
                   const row = rows[virtualRow.index];
                   return (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() ? "selected" : undefined}
-                    >
+                    <Table.Tr key={row.id}>
                       {row.getVisibleCells().map((cell) => {
                         const isSticky = cell.column.id === STICKY_COLUMN_ID;
                         return (
-                          <TableCell
+                          <Table.Td
                             key={cell.id}
-                            className={
+                            style={
                               isSticky
-                                ? "sticky left-0 z-10 bg-background shadow-[1px_0_0_0_hsl(var(--border))]"
+                                ? {
+                                    position: "sticky",
+                                    left: 0,
+                                    zIndex: 10,
+                                    background: "var(--mantine-color-body)",
+                                  }
                                 : undefined
                             }
                           >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </TableCell>
+                          </Table.Td>
                         );
                       })}
-                    </TableRow>
+                    </Table.Tr>
                   );
                 })}
                 {paddingBottom > 0 && (
@@ -134,14 +155,17 @@ export function AdDataTableVirtual({
                 )}
               </>
             ) : (
-              <TableRow>
-                <TableCell colSpan={table.getAllColumns().length} className="h-24 text-center">
+              <Table.Tr>
+                <Table.Td
+                  colSpan={table.getAllColumns().length}
+                  style={{ textAlign: "center", height: 96 }}
+                >
                   データがありません
-                </TableCell>
-              </TableRow>
+                </Table.Td>
+              </Table.Tr>
             )}
-          </tbody>
-        </table>
+          </Table.Tbody>
+        </Table>
       </div>
     </section>
   );

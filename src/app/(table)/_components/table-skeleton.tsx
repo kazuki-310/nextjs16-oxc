@@ -1,4 +1,6 @@
-import { Skeleton } from "@/components/ui/skeleton";
+"use client";
+
+import { Skeleton, Table, Text } from "@mantine/core";
 import { columnDefs } from "./columns";
 
 const SKELETON_ROW_COUNT = 5;
@@ -9,34 +11,47 @@ type Props = {
 
 export function TableSkeleton({ title }: Props): React.JSX.Element {
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-      <div className="max-h-[660px] overflow-auto rounded-md border">
-        <table className="w-full caption-bottom text-sm">
-          <thead className="sticky top-0 z-20 bg-background [&_tr]:border-b">
-            <tr className="border-b transition-colors">
+    <section>
+      <Text fz="sm" fw={600} mb="xs">
+        {title}
+      </Text>
+      <div
+        style={{
+          maxHeight: 660,
+          overflow: "auto",
+          border: "1px solid var(--mantine-color-default-border)",
+          borderRadius: "var(--mantine-radius-sm)",
+        }}
+      >
+        <Table striped highlightOnHover withColumnBorders>
+          <Table.Thead
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 20,
+              background: "var(--mantine-color-body)",
+            }}
+          >
+            <Table.Tr>
               {columnDefs.map(({ key, label }) => (
-                <th
-                  key={key}
-                  className="h-10 whitespace-nowrap px-2 text-left align-middle font-medium text-muted-foreground"
-                >
+                <Table.Th key={key} style={{ whiteSpace: "nowrap" }}>
                   {label}
-                </th>
+                </Table.Th>
               ))}
-            </tr>
-          </thead>
-          <tbody className="[&_tr:last-child]:border-0">
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
             {Array.from({ length: SKELETON_ROW_COUNT }).map((_, rowIndex) => (
-              <tr key={rowIndex} className="border-b transition-colors">
+              <Table.Tr key={rowIndex}>
                 {columnDefs.map(({ key }) => (
-                  <td key={key} className="p-2 align-middle">
-                    <Skeleton className="h-4 min-w-16" />
-                  </td>
+                  <Table.Td key={key}>
+                    <Skeleton height={16} maw={64} />
+                  </Table.Td>
                 ))}
-              </tr>
+              </Table.Tr>
             ))}
-          </tbody>
-        </table>
+          </Table.Tbody>
+        </Table>
       </div>
     </section>
   );

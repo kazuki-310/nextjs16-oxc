@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Box, Container, Stack, Title } from "@mantine/core";
 import { FilterForm } from "../_components/filter-form";
 import { ColumnVisibilityControl } from "../_components/column-visibility-control";
 import { TablesContainer } from "./_components/tables-container";
@@ -12,15 +13,23 @@ export const metadata: Metadata = {
 
 export default function Page(): React.JSX.Element {
   return (
-    <main className="container mx-auto flex flex-col gap-10 p-8">
-      <h1 className="text-xl font-bold">広告レポート一覧</h1>
-      <Suspense>
-        <FilterForm />
-        <ColumnVisibilityControl />
-      </Suspense>
-      <Suspense fallback={<TablesLoadingFallback />}>
-        <TablesContainer />
-      </Suspense>
-    </main>
+    <Container component="main" size="xl" p="xl">
+      <Stack gap="xl">
+        <Title order={1} fz="xl" fw={700}>
+          広告レポート一覧
+        </Title>
+        <Suspense>
+          <Box>
+            <Stack gap="md">
+              <FilterForm />
+              <ColumnVisibilityControl />
+            </Stack>
+          </Box>
+        </Suspense>
+        <Suspense fallback={<TablesLoadingFallback />}>
+          <TablesContainer />
+        </Suspense>
+      </Stack>
+    </Container>
   );
 }
