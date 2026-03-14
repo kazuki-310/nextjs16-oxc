@@ -96,20 +96,20 @@ apps/web/src/app/(table)/
 
 ## ファイル配置のルール
 
-| ディレクトリ                              | 配置基準                                             |
-| ----------------------------------------- | ---------------------------------------------------- |
-| `src/components/shared/`                  | 複数ページをまたいで使う共通コンポーネント           |
-| `src/lib/`                                | 複数ページをまたいで使う共通ユーティリティ           |
-| `src/server-functions/actions/`           | 複数ページをまたいで使う Server Actions              |
-| `src/server-functions/fetchers/`          | 複数ページをまたいで使う fetcher                     |
-| `src/constants/`                          | 複数ページをまたいで使う定数                         |
-| `src/hooks/`                              | 複数ページをまたいで使うカスタムフック               |
-| `(group)/_components/`                    | ルートグループ内の複数ページで共有するコンポーネント |
-| `(group)/_lib/`                           | ルートグループ内の複数ページで共有するユーティリティ |
-| `(group)/_server-functions/`              | ルートグループ内で共有するサーバー関数               |
-| `[feature]/_components/`                  | そのページ固有のコンポーネント                       |
-| `[feature]/_lib/`                         | そのページ固有の定数・ユーティリティ                 |
-| `[feature]/_server-functions/`            | そのページ固有の Server Actions / fetcher            |
+| ディレクトリ                     | 配置基準                                             |
+| -------------------------------- | ---------------------------------------------------- |
+| `src/components/shared/`         | 複数ページをまたいで使う共通コンポーネント           |
+| `src/lib/`                       | 複数ページをまたいで使う共通ユーティリティ           |
+| `src/server-functions/actions/`  | 複数ページをまたいで使う Server Actions              |
+| `src/server-functions/fetchers/` | 複数ページをまたいで使う fetcher                     |
+| `src/constants/`                 | 複数ページをまたいで使う定数                         |
+| `src/hooks/`                     | 複数ページをまたいで使うカスタムフック               |
+| `(group)/_components/`           | ルートグループ内の複数ページで共有するコンポーネント |
+| `(group)/_lib/`                  | ルートグループ内の複数ページで共有するユーティリティ |
+| `(group)/_server-functions/`     | ルートグループ内で共有するサーバー関数               |
+| `[feature]/_components/`         | そのページ固有のコンポーネント                       |
+| `[feature]/_lib/`                | そのページ固有の定数・ユーティリティ                 |
+| `[feature]/_server-functions/`   | そのページ固有の Server Actions / fetcher            |
 
 **命名規則**: ディレクトリ名、ファイル名はすべて `kebab-case`
 
