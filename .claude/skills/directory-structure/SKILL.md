@@ -6,107 +6,134 @@ user-invocable: false
 
 # ディレクトリ構造
 
-## プロジェクト全体構造
+## モノレポ全体構造
 
 ```
-src/
-├── app/                          # Next.js App Router
-│   ├── layout.tsx                # ルートレイアウト
-│   ├── page.tsx                  # トップページ
-│   ├── globals.css               # グローバルスタイル
-│   ├── _components/              # app 直下ページ固有コンポーネント
-│   ├── _lib/                     # app 直下ページ固有ユーティリティ
-│   ├── _server-functions/        # app 直下ページ固有 Server Functions
-│   │   ├── actions/              # 更新系処理（Server Actions）
-│   │   └── fetchers/             # 参照系処理
-│   └── (feature-group)/          # ルートグループ（URLに影響しない）
-│       ├── _components/          # グループ内の複数ページで共有するコンポーネント
-│       ├── _lib/                 # グループ内の複数ページで共有するユーティリティ
-│       └── feature-name/
-│           ├── page.tsx
-│           └── _components/      # そのページ固有のコンポーネント
-├── components/
-│   ├── shared/                   # 共通コンポーネント
-│   └── ui/                       # shadcn/ui コンポーネント（自動生成・編集不要）
-├── constants/                    # 共通定数定義
-├── hooks/                        # 共通カスタムフック
-├── lib/                          # 共通ユーティリティ・ヘルパー関数
-└── server-functions/             # 共通 Server Functions
-    ├── actions/                  # 更新系処理
-    └── fetchers/                 # 参照系処理
+nextjs16-oxc/                        # ルート
+├── apps/
+│   ├── web/                         # Next.js 16 フロントエンドアプリ
+│   └── batch/                       # バッチ処理アプリ (Node.js)
+├── packages/
+│   └── typescript-config/           # 共有 TypeScript 設定
+├── infrastructures/                 # インフラ関連
+├── docs/                            # ドキュメント
+├── turbo.json                       # Turborepo 設定
+├── pnpm-workspace.yaml              # pnpm ワークスペース設定
+├── package.json                     # ルート package.json
+├── .oxlintrc.json                   # oxlint 設定
+├── .oxfmtrc.json                    # oxfmt 設定
+└── lefthook.yml                     # Git フック設定
+```
+
+## apps/web（Next.js アプリ）構造
+
+```
+apps/web/
+├── src/
+│   ├── app/                         # App Router のルートディレクトリ
+│   │   ├── layout.tsx               # ルートレイアウト
+│   │   ├── page.tsx                 # トップページ (/)
+│   │   ├── globals.css              # グローバルスタイル
+│   │   ├── _components/             # app/ 直下のルート専用コンポーネント
+│   │   ├── _lib/                    # app/ 直下のルート専用ユーティリティ
+│   │   ├── _server-functions/       # app/ 直下のルート専用サーバー関数
+│   │   │   ├── actions/             # Server Actions（更新系処理）
+│   │   │   └── fetchers/            # データ取得関数（参照系処理）
+│   │   └── (feature-group)/         # Route Group（URL に影響しない）
+│   │       ├── _components/         # グループ共有コンポーネント
+│   │       ├── _lib/                # グループ共有ユーティリティ・定数
+│   │       ├── _server-functions/   # グループ共有サーバー関数
+│   │       │   └── fetchers/
+│   │       └── feature-name/        # 各ページ
+│   │           ├── page.tsx
+│   │           ├── layout.tsx       # （任意）
+│   │           ├── loading.tsx      # （任意）
+│   │           └── _components/     # ページ固有コンポーネント
+│   ├── components/                  # アプリ全体で共有するコンポーネント
+│   │   └── shared/
+│   ├── constants/                   # アプリ全体で共有する定数
+│   ├── hooks/                       # カスタムフック
+│   ├── lib/                         # 汎用ユーティリティ
+│   └── server-functions/            # アプリ全体で共有するサーバー関数
+│       ├── actions/                 # Server Actions
+│       └── fetchers/                # データ取得関数
+├── e2e/                             # Playwright E2E テスト
+├── public/                          # 静的ファイル
+├── next.config.ts
+├── playwright.config.ts
+└── vitest.config.ts
 ```
 
 ## 実際の構造例（(table) ルートグループ）
 
 ```
-src/app/(table)/
+apps/web/src/app/(table)/
 ├── _components/                  # tables/ と tables-virtual/ で共有
-│   ├── filter-form.tsx
 │   ├── column-visibility-control.tsx
 │   ├── columns.tsx
-│   └── data-table-column-header.tsx
+│   ├── filter-form.tsx
+│   ├── table-skeleton.tsx
+│   └── tables-loading-fallback.tsx
 ├── _lib/                         # グループ内で共有
-│   ├── schema.ts                 # schema 定義
-│   └── constants.ts
+│   ├── constants.ts
+│   └── schema.ts
+├── _server-functions/
+│   └── fetchers/
+│       └── get-ad-data.ts
 ├── tables/
 │   ├── page.tsx
-│   └── _components/              # ページ固有のコンポーネント
-│       ├── tables-content.tsx
-│       └── ad-data-table.tsx
+│   └── _components/
+│       ├── ad-data-table.tsx
+│       ├── tables-container.tsx
+│       └── tables-content.tsx
 └── tables-virtual/
     ├── page.tsx
-    └── _components/              # tables-virtual ページ固有
-        ├── tables-content-virtual.tsx
-        └── ad-data-table-virtual.tsx
-```
-
-## ページごとの基本構造
-
-```
-src/app/(feature-group)/feature-name/
-├── page.tsx
-├── layout.tsx                    # レイアウト（任意）
-├── loading.tsx                   # ローディング（任意）
-├── _components/                  # ページ固有コンポーネント
-│   ├── feature-form.tsx
-│   └── feature-list.tsx
-├── _lib/                         # ページ固有ライブラリ・ユーティリティ
-│   ├── constants.ts              # 定数
-│   └── utils.ts                  # ユーティリティ関数
-└── _server-functions/            # ページ固有 Server Functions
-    ├── actions/                  # 更新系処理（Server Actions）
-    └── fetchers/                 # 参照系処理
+    └── _components/
+        ├── ad-data-table-virtual.tsx
+        ├── tables-container-virtual.tsx
+        └── tables-content-virtual.tsx
 ```
 
 ## ファイル配置のルール
 
-| ディレクトリ                     | 配置基準                                                     |
-| -------------------------------- | ------------------------------------------------------------ |
-| `src/components/ui/`             | shadcn/ui コンポーネント（`pnpm dlx shadcn add` で自動生成） |
-| `src/components/shared/`         | 複数のページをまたいで使う共通コンポーネント                 |
-| `src/lib/`                       | 複数のページをまたいで使う共通ユーティリティ                 |
-| `src/server-functions/actions/`  | 複数のページをまたいで使う Server Actions                    |
-| `src/server-functions/fetchers/` | 複数のページをまたいで使う fetcher                           |
-| `src/constants/`                 | 複数のページをまたいで使う定数                               |
-| `src/hooks/`                     | 複数のページをまたいで使うカスタムフック                     |
-| `(group)/_components/`           | ルートグループ内の複数ページで共有するコンポーネント         |
-| `(group)/_lib/`                  | ルートグループ内の複数ページで共有するユーティリティ・定数   |
-| `[feature]/_components/`         | そのページ固有のコンポーネント                               |
-| `[feature]/_lib/`                | そのページ固有の定数・ユーティリティ                         |
-| `[feature]/_server-functions/`   | そのページ固有の Server Actions / fetcher                    |
+| ディレクトリ                              | 配置基準                                             |
+| ----------------------------------------- | ---------------------------------------------------- |
+| `src/components/shared/`                  | 複数ページをまたいで使う共通コンポーネント           |
+| `src/lib/`                                | 複数ページをまたいで使う共通ユーティリティ           |
+| `src/server-functions/actions/`           | 複数ページをまたいで使う Server Actions              |
+| `src/server-functions/fetchers/`          | 複数ページをまたいで使う fetcher                     |
+| `src/constants/`                          | 複数ページをまたいで使う定数                         |
+| `src/hooks/`                              | 複数ページをまたいで使うカスタムフック               |
+| `(group)/_components/`                    | ルートグループ内の複数ページで共有するコンポーネント |
+| `(group)/_lib/`                           | ルートグループ内の複数ページで共有するユーティリティ |
+| `(group)/_server-functions/`              | ルートグループ内で共有するサーバー関数               |
+| `[feature]/_components/`                  | そのページ固有のコンポーネント                       |
+| `[feature]/_lib/`                         | そのページ固有の定数・ユーティリティ                 |
+| `[feature]/_server-functions/`            | そのページ固有の Server Actions / fetcher            |
 
 **命名規則**: ディレクトリ名、ファイル名はすべて `kebab-case`
 
 ## アンダースコアプレフィックスの意味
 
-- `_components/`, `_lib/`, `_server-functions/` のように `_` で始まるディレクトリは Next.js のルーティング対象外
-- ページ固有・グループ固有のものを表す
+- `_components/`, `_lib/`, `_server-functions/` は Next.js の Private Folder 規則に従い、ルーティング対象外
+- そのルート・グループ専用のファイルを置く
 
-## shadcn/ui コンポーネントの追加
+## apps/batch（バッチアプリ）構造
 
-```bash
-pnpm dlx shadcn add <component-name>
-# 例: pnpm dlx shadcn add button dialog table
+```
+apps/batch/
+├── src/
+│   └── index.ts                  # エントリーポイント
+├── package.json
+└── tsconfig.json
 ```
 
-追加されたコンポーネントは `src/components/ui/` に配置される。基本的に直接編集しない。
+## packages/typescript-config
+
+```
+packages/typescript-config/
+├── base.json                     # 基本 TypeScript 設定
+├── nextjs.json                   # Next.js 向け拡張設定
+├── node.json                     # Node.js 向け拡張設定
+└── package.json
+```
