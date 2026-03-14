@@ -1,13 +1,14 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules
 
 # testing
-/coverage
+coverage
 
 # next.js
-/.next/
+.next/
+.next-internal/
 /out/
 
 # production
@@ -30,10 +31,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Turborepo
+.turbo
+
 # Playwright
-node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-/playwright/.auth/
+test-results/
+playwright-report/
