@@ -1,7 +1,7 @@
 import { Box, Center, Paper, Text, Title } from "@mantine/core";
 import type { Metadata } from "next";
 
-import { PostForm } from "./_components/post-form";
+import { PostForm } from "./components/post-form";
 
 export const metadata: Metadata = {
   title: "Create Post",

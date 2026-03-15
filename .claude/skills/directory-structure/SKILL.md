@@ -34,29 +34,28 @@ apps/web/
 │   │   ├── layout.tsx               # ルートレイアウト
 │   │   ├── page.tsx                 # トップページ (/)
 │   │   ├── globals.css              # グローバルスタイル
-│   │   ├── _components/             # app/ 直下のルート専用コンポーネント
-│   │   ├── _lib/                    # app/ 直下のルート専用ユーティリティ
-│   │   ├── _server-functions/       # app/ 直下のルート専用サーバー関数
-│   │   │   ├── actions/             # Server Actions（更新系処理）
-│   │   │   └── fetchers/            # データ取得関数（参照系処理）
-│   │   └── (feature-group)/         # Route Group（URL に影響しない）
-│   │       ├── _components/         # グループ共有コンポーネント
-│   │       ├── _lib/                # グループ共有ユーティリティ・定数
-│   │       ├── _server-functions/   # グループ共有サーバー関数
-│   │       │   └── fetchers/
-│   │       └── feature-name/        # 各ページ
-│   │           ├── page.tsx
-│   │           ├── layout.tsx       # （任意）
-│   │           ├── loading.tsx      # （任意）
-│   │           └── _components/     # ページ固有コンポーネント
+│   │   ├── components/              # app/ 直下のルート専用コンポーネント
+│   │   ├── lib/                     # constants.ts, utils.ts, types.ts, schema.ts
+│   │   ├── actions/                 # Server Actions（更新系処理）
+│   │   ├── data/                    # データ取得関数（参照系処理）
+│   │   ├── hooks/                   # カスタムフック（任意）
+│   │   └── (table)/                 # 複数ページをまとめる場合は Route Group で囲む
+│   │       ├── components/
+│   │       ├── lib/
+│   │       ├── data/
+│   │       ├── tables/
+│   │       │   ├── components/
+│   │       │   └── page.tsx
+│   │       └── tables-virtual/
+│   │           ├── components/
+│   │           └── page.tsx
 │   ├── components/                  # アプリ全体で共有するコンポーネント
 │   │   └── shared/
 │   ├── constants/                   # アプリ全体で共有する定数
 │   ├── hooks/                       # カスタムフック
 │   ├── lib/                         # 汎用ユーティリティ
-│   └── server-functions/            # アプリ全体で共有するサーバー関数
-│       ├── actions/                 # Server Actions
-│       └── fetchers/                # データ取得関数
+│   ├── actions/                     # アプリ全体で共有する Server Actions
+│   └── data/                        # アプリ全体で共有するデータ取得関数
 ├── e2e/                             # Playwright E2E テスト
 ├── public/                          # 静的ファイル
 ├── next.config.ts
@@ -64,66 +63,43 @@ apps/web/
 └── vitest.config.ts
 ```
 
-## 実際の構造例（(table) ルートグループ）
-
-```
-apps/web/src/app/(table)/
-├── _components/                  # tables/ と tables-virtual/ で共有
-│   ├── column-visibility-control.tsx
-│   ├── columns.tsx
-│   ├── filter-form.tsx
-│   ├── table-skeleton.tsx
-│   └── tables-loading-fallback.tsx
-├── _lib/                         # グループ内で共有
-│   ├── constants.ts
-│   └── schema.ts
-├── _server-functions/
-│   └── fetchers/
-│       └── get-ad-data.ts
-├── tables/
-│   ├── page.tsx
-│   └── _components/
-│       ├── ad-data-table.tsx
-│       ├── tables-container.tsx
-│       └── tables-content.tsx
-└── tables-virtual/
-    ├── page.tsx
-    └── _components/
-        ├── ad-data-table-virtual.tsx
-        ├── tables-container-virtual.tsx
-        └── tables-content-virtual.tsx
-```
-
 ## ファイル配置のルール
 
-| ディレクトリ                     | 配置基準                                             |
-| -------------------------------- | ---------------------------------------------------- |
-| `src/components/shared/`         | 複数ページをまたいで使う共通コンポーネント           |
-| `src/lib/`                       | 複数ページをまたいで使う共通ユーティリティ           |
-| `src/server-functions/actions/`  | 複数ページをまたいで使う Server Actions              |
-| `src/server-functions/fetchers/` | 複数ページをまたいで使う fetcher                     |
-| `src/constants/`                 | 複数ページをまたいで使う定数                         |
-| `src/hooks/`                     | 複数ページをまたいで使うカスタムフック               |
-| `(group)/_components/`           | ルートグループ内の複数ページで共有するコンポーネント |
-| `(group)/_lib/`                  | ルートグループ内の複数ページで共有するユーティリティ |
-| `(group)/_server-functions/`     | ルートグループ内で共有するサーバー関数               |
-| `[feature]/_components/`         | そのページ固有のコンポーネント                       |
-| `[feature]/_lib/`                | そのページ固有の定数・ユーティリティ                 |
-| `[feature]/_server-functions/`   | そのページ固有の Server Actions / fetcher            |
+### フィーチャー単位
+
+各ルート配下に以下を必要に応じて置く。複数ルートで共有したいものは Route Group `(groupName)` でまとめてその配下に置く。
+
+| ディレクトリ  | 用途                                             |
+| ------------- | ------------------------------------------------ |
+| `components/` | そのルート・グループのみが使う UI コンポーネント |
+| `lib/`        | constants.ts, utils.ts, types.ts, schema.ts      |
+| `actions/`    | Server Actions                                   |
+| `data/`       | データ取得関数                                   |
+| `hooks/`      | カスタムフック                                   |
+
+`_` プレフィックスは不要（`page.tsx` 等がなければ元々ルーティングされない）。
+
+### グローバルスコープ (`src/` 直下)
+
+複数ルートにまたがって使う場合は `src/` 直下に置く。
+
+| ディレクトリ      | 用途                                   |
+| ----------------- | -------------------------------------- |
+| `src/components/` | アプリ全体で共有する UI コンポーネント |
+| `src/constants/`  | アプリ全体で共有する定数               |
+| `src/hooks/`      | カスタムフック                         |
+| `src/lib/`        | 汎用ユーティリティ                     |
+| `src/actions/`    | アプリ全体で共有する Server Actions    |
+| `src/data/`       | アプリ全体で共有するデータ取得関数     |
 
 **命名規則**: ディレクトリ名、ファイル名はすべて `kebab-case`
-
-## アンダースコアプレフィックスの意味
-
-- `_components/`, `_lib/`, `_server-functions/` は Next.js の Private Folder 規則に従い、ルーティング対象外
-- そのルート・グループ専用のファイルを置く
 
 ## apps/batch（バッチアプリ）構造
 
 ```
 apps/batch/
 ├── src/
-│   └── index.ts                  # エントリーポイント
+│   └── index.ts
 ├── package.json
 └── tsconfig.json
 ```

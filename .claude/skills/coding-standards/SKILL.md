@@ -195,71 +195,125 @@ const [params, setParams] = useQueryStates(filterParsers);
 バックエンド処理は基本的に **Server Actions** を使用する。
 
 - `"use server"` ディレクティブを付ける
-- ページ固有の Server Actions: `_server-functions/actions/`
-- 共通 Server Actions: `src/server-functions/actions/`
+- ページ固有の Server Actions: `[feature]/actions/`
+- 共通 Server Actions: `src/actions/`
 
 ### サーバー専用ユーティリティ（`server-only`）
 
 - クライアントから呼ぶ Server Actions には `"use server"` ディレクティブを付ける
-- それ以外のサーバー側コード（fetchers など）はすべて `import "server-only"` を付ける
+- それ以外のサーバー側コード（data/ など）はすべて `import "server-only"` を付ける
 
 ```ts
 // actions（クライアントから呼ぶ）
 "use server";
 export async function createPost() { ... }
 
-// fetchers（RSC から呼ぶ）
+// data（RSC から呼ぶ）
 import "server-only";
 export async function getPosts() { ... }
 ```
 
+### エラーハンドリング
+
+#### 戻り値の型
+
+直接呼び出す Server Actions には `ActionResult<T>`（`src/types/action.ts`）を使う。
+
+```ts
+import type { ActionResult } from "@/types/action";
+
+export async function createPost(input: Input): Promise<ActionResult<Post>> {
+  const validated = PostSchema.safeParse(input);
+  if (!validated.success) {
+    return { success: false, error: "入力内容が正しくありません" };
+  }
+  const post = await db.insert(validated.data); // DB エラーは throw → error.tsx
+  return { success: true, data: post };
+}
+```
+
+#### try-catch の方針
+
+- **バリデーションエラー**: try-catch 不要。`safeParse` などで処理
+- **予期できる DB エラー**（ユニーク制約など）: catch してユーザー向けメッセージを返す
+- **予期しないエラー**（DB 障害など）: catch せず throw → `error.tsx` に任せる
+- catch しても再スローするだけなら try-catch ごと不要
+
+```ts
+try {
+  const post = await db.insert(data);
+  return { success: true, data: post };
+} catch (e) {
+  if (isUniqueConstraintError(e)) {
+    return { success: false, error: "すでに存在しています" };
+  }
+  throw e; // 予期しないエラーは再スロー
+}
+```
+
+#### redirect() の注意点
+
+`redirect()` は内部で例外を throw するため **try ブロックの外** に置く。
+
+```ts
+// NG: catch に捕まる
+try {
+  await db.insert(data);
+  redirect("/posts");
+} catch (e) { ... }
+
+// Good
+try {
+  await db.insert(data);
+} catch (e) { ... }
+
+redirect("/posts"); // try の外
+```
+
+## データ取得（data/）
+
+RSC から呼ぶデータ取得関数のエラーハンドリング。**try-catch は不要**。
+
+```ts
+import "server-only";
+import { notFound } from "next/navigation";
+
+export async function getPost(id: string): Promise<Post> {
+  const post = await db.query(id); // DB エラーは throw → error.tsx
+  if (!post) notFound(); // → not-found.tsx（404）
+  return post;
+}
+
+// 業務ロジック上の異常は throw new Error → error.tsx
+if (!post.isPublished) throw new Error("非公開データへのアクセス");
+```
+
+| 状況                        | 対処                                 |
+| --------------------------- | ------------------------------------ |
+| データが存在しない          | `notFound()` → not-found.tsx（404）  |
+| 業務ロジック上の異常        | `throw new Error("...")` → error.tsx |
+| DB 障害など予期しないエラー | そのまま throw → error.tsx           |
+
+- `ActionResult<T>` は不要（エラーをクライアントに返す必要がないため）
+- try-catch で全エラーを隠さない（障害が検知できなくなる）
+
 ## スタイリング
 
-### Tailwind CSS v4
+### Mantine
 
-- Tailwind CSS v4 を使用（PostCSS 経由）
-- クラスの結合には `cn()` ヘルパーを使う（`@/lib/utils`）
-
-```tsx
-import { cn } from "@/lib/utils";
-
-<div className={cn("rounded-lg px-4 py-2", isActive && "bg-primary text-primary-foreground")} />;
-```
-
-### shadcn/ui
-
-UI コンポーネントライブラリとして **shadcn/ui**（new-york スタイル）を使用する。
-
-#### コンポーネントの追加
-
-```bash
-pnpm dlx shadcn add <component-name>
-# 例: pnpm dlx shadcn add button dialog table
-```
-
-追加されたコンポーネントは `src/components/ui/` に配置される。
-
-#### 使い方
+UI コンポーネントライブラリとして **Mantine v8** を使用する。
 
 ```tsx
-import { Button } from "@/components/ui/button";
+import { Button, Stack, TextInput } from "@mantine/core";
 
-<Button variant="outline" size="sm">
-  保存
-</Button>;
+<Stack gap="md">
+  <TextInput label="タイトル" placeholder="入力してください" />
+  <Button type="submit">保存</Button>
+</Stack>;
 ```
 
-#### アイコン
-
-アイコンは **lucide-react** を使う。
-
-```tsx
-import { Pencil, Trash2 } from "lucide-react";
-
-<Button size="icon">
-  <Pencil />
-</Button>;
-```
+- `@mantine/core` — UI コンポーネント
+- `@mantine/hooks` — フック（`useDisclosure`, `useForm` など）
 
 ## テスト
 

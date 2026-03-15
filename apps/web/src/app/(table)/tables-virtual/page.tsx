@@ -2,10 +2,10 @@ import { Box, Container, Stack, Title } from "@mantine/core";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { ColumnVisibilityControl } from "../_components/column-visibility-control";
-import { FilterForm } from "../_components/filter-form";
-import { TablesLoadingFallback } from "../_components/tables-loading-fallback";
-import { TablesContainerVirtual } from "./_components/tables-container-virtual";
+import { ColumnVisibilityControl } from "../components/column-visibility-control";
+import { FilterForm } from "../components/filter-form";
+import { TablesLoadingFallback } from "../components/tables-loading-fallback";
+import { TablesContainerVirtual } from "./components/tables-container-virtual";
 
 export const metadata: Metadata = {
   title: "広告レポート一覧（仮想化）",

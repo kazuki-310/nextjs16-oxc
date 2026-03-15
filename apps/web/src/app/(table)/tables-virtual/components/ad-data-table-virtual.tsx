@@ -12,8 +12,8 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRef, useState } from "react";
 
-import { columns } from "../../_components/columns";
-import type { AdRow } from "../../_lib/constants";
+import { columns } from "../../components/columns";
+import type { AdRow } from "../../lib/constants";
 
 type Props = {
   title: string;

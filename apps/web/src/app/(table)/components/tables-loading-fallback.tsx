@@ -1,6 +1,6 @@
 import { Stack } from "@mantine/core";
 
-import { tableConfigs } from "../_lib/constants";
+import { tableConfigs } from "../lib/constants";
 import { TableSkeleton } from "./table-skeleton";
 
 const PREVIEW_COUNT = 3;

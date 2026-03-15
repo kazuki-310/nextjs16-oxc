@@ -1,7 +1,7 @@
 import { ActionIcon, Group, Text } from "@mantine/core";
 import { type Column, type ColumnDef } from "@tanstack/react-table";
 
-import { type AdRow } from "../_lib/constants";
+import { type AdRow } from "../lib/constants";
 
 type DataTableColumnHeaderProps<TData, TValue> = {
   column: Column<TData, TValue>;

@@ -4,7 +4,7 @@ import { Button, Group, NumberInput, Paper, TextInput } from "@mantine/core";
 import { useQueryStates } from "nuqs";
 import { useState } from "react";
 
-import { filterParsers } from "../_lib/schema";
+import { filterParsers } from "../lib/schema";
 
 export function FilterForm(): React.JSX.Element {
   const [params, setParams] = useQueryStates(filterParsers);

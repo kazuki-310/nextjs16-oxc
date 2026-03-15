@@ -1,5 +1,5 @@
 import "server-only";
-import { tableData, tableConfigs, type AdRow } from "../../_lib/constants";
+import { tableData, tableConfigs, type AdRow } from "../lib/constants";
 
 export type { AdRow };
 

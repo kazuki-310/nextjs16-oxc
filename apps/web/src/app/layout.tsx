@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { NuqsAdapter } from "nuqs/adapters/next";
 
-import { Sidebar } from "@/components/shared/sidebar";
+import { Sidebar } from "@/components/layout/sidebar";
 
 export const metadata: Metadata = {
   title: "Create Next App",

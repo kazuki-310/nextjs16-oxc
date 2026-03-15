@@ -3,14 +3,14 @@
 import { type VisibilityState } from "@tanstack/react-table";
 import { useQueryState, useQueryStates, parseAsArrayOf, parseAsString } from "nuqs";
 
-import { columnDefs } from "../../_components/columns";
-import { filterParsers } from "../../_lib/schema";
-import type { AdData } from "../../_server-functions/fetchers/get-ad-data";
-import { AdDataTable } from "./ad-data-table";
+import { columnDefs } from "../../components/columns";
+import type { AdData } from "../../data/get-ad-data";
+import { filterParsers } from "../../lib/schema";
+import { AdDataTableVirtual } from "./ad-data-table-virtual";
 
 type Props = AdData;
 
-export function TablesContent({ tableData, tableConfigs }: Props): React.JSX.Element {
+export function TablesContentVirtual({ tableData, tableConfigs }: Props): React.JSX.Element {
   const [{ name, minImpressions, minConversions }] = useQueryStates(filterParsers);
   const [hiddenColumns, setHiddenColumns] = useQueryState(
     "hidden",
@@ -38,7 +38,7 @@ export function TablesContent({ tableData, tableConfigs }: Props): React.JSX.Ele
   return (
     <>
       {tableConfigs.map((config) => (
-        <AdDataTable
+        <AdDataTableVirtual
           key={config.id}
           title={config.title}
           data={filteredData}
