@@ -1,7 +1,6 @@
 ---
-name: coding-standards
-description: Coding conventions for this project. Use when writing, reviewing, or refactoring code — TypeScript types, React components, naming rules, Server Actions, Tailwind CSS, testing.
-user-invocable: false
+paths:
+  - "apps/**/*.{ts,tsx}"
 ---
 
 # コード規約
@@ -25,7 +24,7 @@ user-invocable: false
 - ディレクトリ名: `kebab-case`
 - コンポーネントファイル名: `kebab-case`
 
-詳細なディレクトリ構造については `directory-structure` スキルを参照。
+詳細なディレクトリ構造については `directory-structure.md` を参照。
 
 ## TypeScript
 
