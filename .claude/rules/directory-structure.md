@@ -33,7 +33,7 @@ apps/web/
 │   │   ├── components/              # このルート専用コンポーネント
 │   │   │   └── post-form.tsx
 │   │   ├── lib/                     # constants.ts, utils.ts, types.ts, schema.ts
-│   │   ├── actions/                 # Server Actions
+│   │   ├── functions/                 # Server Functions
 │   │   │   ├── create-post.ts
 │   │   │   └── create-post.test.ts
 │   │   ├── data/                    # データ取得関数
@@ -69,7 +69,7 @@ apps/web/
 │   ├── constants/
 │   ├── hooks/
 │   ├── lib/                         # 汎用ユーティリティ
-│   ├── actions/                     # アプリ全体で共有する Server Actions
+│   ├── functions/                     # アプリ全体で共有する Server Functions
 │   └── data/                        # アプリ全体で共有するデータ取得関数
 │
 ├── e2e/
@@ -92,13 +92,13 @@ apps/web/
 各ルート・グループ配下に以下のディレクトリを必要に応じて置く。
 `_` プレフィックスは不要（`page.tsx` 等がなければ元々ルーティングされない）。
 
-| ディレクトリ  | 用途                                             |
-| ------------- | ------------------------------------------------ |
-| `components/` | そのルート・グループのみが使う UI コンポーネント |
-| `lib/`        | constants.ts, utils.ts, types.ts, schema.ts      |
-| `actions/`    | Server Actions                                   |
-| `data/`       | データ取得関数                                   |
-| `hooks/`      | カスタムフック                                   |
+| ディレクトリ    | 用途                                             |
+| --------------- | ------------------------------------------------ |
+| `components/`   | そのルート・グループのみが使う UI コンポーネント |
+| `lib/`          | constants.ts, utils.ts, types.ts, schema.ts      |
+| `functions/`    | Server Functions（フォームアクション含む）        |
+| `data/`         | データ取得関数                                   |
+| `hooks/`        | カスタムフック                                   |
 
 ### グローバルスコープ (`src/` 直下)
 
@@ -110,7 +110,7 @@ apps/web/
 | `src/constants/`  | アプリ全体で共有する定数               |
 | `src/hooks/`      | カスタムフック                         |
 | `src/lib/`        | 汎用ユーティリティ                     |
-| `src/actions/`    | アプリ全体で共有する Server Actions    |
+| `src/functions/`  | アプリ全体で共有する Server Functions  |
 | `src/data/`       | アプリ全体で共有するデータ取得関数     |
 
 ---

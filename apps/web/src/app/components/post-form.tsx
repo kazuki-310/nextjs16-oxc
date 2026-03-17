@@ -3,7 +3,7 @@
 import { Alert, Button, Stack, Textarea, TextInput } from "@mantine/core";
 import { useActionState } from "react";
 
-import { CreatePostState, createPost } from "../actions/create-post";
+import { CreatePostState, createPost } from "../functions/create-post";
 
 const initialState: CreatePostState = { status: "idle" };
 
