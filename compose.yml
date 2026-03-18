@@ -1,0 +1,21 @@
+services:
+  rdb:
+    image: mysql:8.0.45
+    container_name: nextjs16-oxc
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: nextjs16_oxc
+      TZ: UTC
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - type: volume
+        source: nextjs16-oxc-rdb
+        target: /var/lib/mysql
+
+volumes:
+  nextjs16-oxc-rdb:
+    name: nextjs16-oxc-rdb
+    driver: local

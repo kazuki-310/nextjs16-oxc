@@ -37,31 +37,6 @@ apps/web/
 │   │   │   ├── create-post.ts
 │   │   │   └── create-post.test.ts
 │   │   ├── data/                    # データ取得関数
-│   │   └── (table)/
-│   │       ├── components/
-│   │       │   ├── column-visibility-control.tsx
-│   │       │   ├── columns.tsx
-│   │       │   ├── filter-form.tsx
-│   │       │   ├── table-skeleton.tsx
-│   │       │   └── tables-loading-fallback.tsx
-│   │       ├── lib/
-│   │       │   ├── constants.ts
-│   │       │   └── schema.ts
-│   │       ├── data/
-│   │       │   └── get-ad-data.ts
-│   │       ├── tables/
-│   │       │   ├── components/
-│   │       │   │   ├── ad-data-table.tsx
-│   │       │   │   ├── tables-container.tsx
-│   │       │   │   └── tables-content.tsx
-│   │       │   └── page.tsx
-│   │       └── tables-virtual/
-│   │           ├── components/
-│   │           │   ├── ad-data-table-virtual.tsx
-│   │           │   ├── tables-container-virtual.tsx
-│   │           │   └── tables-content-virtual.tsx
-│   │           └── page.tsx
-│   │
 │   ├── components/                  # アプリ全体で共有するコンポーネント
 │   │   ├── layout/
 │   │   │   └── sidebar.tsx
@@ -92,13 +67,13 @@ apps/web/
 各ルート・グループ配下に以下のディレクトリを必要に応じて置く。
 `_` プレフィックスは不要（`page.tsx` 等がなければ元々ルーティングされない）。
 
-| ディレクトリ    | 用途                                             |
-| --------------- | ------------------------------------------------ |
-| `components/`   | そのルート・グループのみが使う UI コンポーネント |
-| `lib/`          | constants.ts, utils.ts, types.ts, schema.ts      |
-| `functions/`    | Server Functions（フォームアクション含む）        |
-| `data/`         | データ取得関数                                   |
-| `hooks/`        | カスタムフック                                   |
+| ディレクトリ  | 用途                                             |
+| ------------- | ------------------------------------------------ |
+| `components/` | そのルート・グループのみが使う UI コンポーネント |
+| `lib/`        | constants.ts, utils.ts, types.ts, schema.ts      |
+| `functions/`  | Server Functions（フォームアクション含む）       |
+| `data/`       | データ取得関数                                   |
+| `hooks/`      | カスタムフック                                   |
 
 ### グローバルスコープ (`src/` 直下)
 

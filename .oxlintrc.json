@@ -23,7 +23,7 @@
         "**/next.config.mjs",
         "**/vitest.config.ts",
         "**/playwright.config.ts",
-        "**/postcss.config.mjs"
+        "**/prisma.config.ts"
       ],
       "rules": {
         "no-default-export": "off"
