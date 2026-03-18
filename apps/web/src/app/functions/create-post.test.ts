@@ -1,4 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("@packages/database", () => ({
+  prisma: {
+    post: {
+      create: vi.fn().mockResolvedValue({ id: 1 }),
+    },
+  },
+}));
 
 import { createPost, type CreatePostState } from "./create-post";
 
@@ -16,7 +24,7 @@ describe("createPost", () => {
   it("title と body が揃っていれば成功を返す", async () => {
     const result = await createPost(idle, makeFormData({ title: "Hello", body: "World" }));
 
-    expect(result).toEqual({ status: "success", id: "post-1" });
+    expect(result).toEqual({ status: "success", id: "1" });
   });
 
   it("title が空文字のときエラーを返す", async () => {

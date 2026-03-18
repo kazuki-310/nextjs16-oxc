@@ -1,7 +1,9 @@
 import { Box, Center, Paper, Text, Title } from "@mantine/core";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { PostForm } from "./components/post-form";
+import { PostList } from "./components/post-list";
 
 export const metadata: Metadata = {
   title: "Create Post",
@@ -23,6 +25,15 @@ export default function Page(): React.JSX.Element {
         <Paper withBorder p="lg" radius="md">
           <PostForm />
         </Paper>
+        <Box mt="xl">
+          <Title order={2} fz="lg" fw={600} mb="md">
+            Posts
+          </Title>
+
+          <Suspense fallback={<Text c="dimmed">Loading...</Text>}>
+            <PostList />
+          </Suspense>
+        </Box>
       </Box>
     </Center>
   );

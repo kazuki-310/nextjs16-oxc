@@ -11,6 +11,8 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "postinstall": "lefthook install",
+    "prisma:generate": "pnpm --filter @packages/database prisma:generate",
+    "prisma:migrate:dev": "pnpm --filter @packages/database prisma:migrate:dev",
     "start": "pnpm --filter web start",
     "type-check": "turbo run type-check"
   },

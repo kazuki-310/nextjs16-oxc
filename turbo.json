@@ -1,5 +1,6 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
+  "globalEnv": ["DATABASE_URL"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -13,6 +14,15 @@
       "dependsOn": ["^type-check"]
     },
     "test": {
+      "cache": false
+    },
+    "prisma:generate": {
+      "cache": false
+    },
+    "prisma:migrate:dev": {
+      "cache": false
+    },
+    "prisma:migrate:deploy": {
       "cache": false
     },
     "//#lint": {},

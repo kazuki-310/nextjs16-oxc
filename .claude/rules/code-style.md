@@ -273,6 +273,21 @@ redirect("/posts"); // try の外
 
 RSC から呼ぶデータ取得関数のエラーハンドリング。**try-catch は不要**。
 
+### React cache()
+
+`data/` の関数は `React.cache()` で囲む。同一リクエスト内で複数のコンポーネントから呼ばれても DB アクセスが1回になる。
+
+```ts
+import "server-only";
+
+import { cache } from "react";
+import { prisma } from "@packages/database";
+
+export const getPosts = cache(async (): Promise<Post[]> => {
+  return prisma.post.findMany({ orderBy: { id: "desc" } });
+});
+```
+
 ```ts
 import "server-only";
 import { notFound } from "next/navigation";

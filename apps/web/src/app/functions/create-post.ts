@@ -1,5 +1,7 @@
 "use server";
 
+import { prisma } from "@packages/database";
+
 export type CreatePostState =
   | { status: "idle" }
   | { status: "success"; id: string }
@@ -20,6 +22,8 @@ export async function createPost(
     return { status: "error", error: "Body is required" };
   }
 
-  // Fake insert
-  return { status: "success", id: "post-1" };
+  const post = await prisma.post.create({
+    data: { title: title.trim(), content: body.trim(), authorId: 1 },
+  });
+  return { status: "success", id: String(post.id) };
 }
