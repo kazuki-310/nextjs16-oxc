@@ -5,19 +5,6 @@ paths:
 
 # コード規約
 
-## 基本方針
-
-- 可読性と保守性を重視
-- 一貫性のあるコーディングスタイル
-- TypeScript の型安全性を最大限活用
-
-## ツールチェーン
-
-- **Linter**: oxlint（`pnpm lint` / `pnpm lint:fix`）
-- **Formatter**: oxfmt（`pnpm fmt` / `pnpm fmt:check`）
-- **型チェック**: `pnpm type-check`
-- **まとめて実行**: `pnpm check`（ファイル変更後は必ず実行）
-
 ## ファイル・ディレクトリ命名規則
 
 - ファイル名: `kebab-case`
@@ -51,22 +38,7 @@ type User = {
 
 ## React
 
-### コンポーネント
-
-- 関数コンポーネントを使用
-- Props 型を明確に定義
-- `page.tsx`, `layout.tsx` は Next.js の規約に従い `export default` を使用
-- それ以外のファイルは named export を使用
-
-```tsx
-// NG: default export
-export default function UserCard() { ... }
-
-// Good: named export
-export function UserCard() { ... }
-```
-
-#### コンポーネント名の命名規則
+### コンポーネント名の命名規則
 
 - 目的に沿った具体的な名前を使用する
 - 汎用的すぎる名前は避ける
@@ -79,27 +51,6 @@ client.tsx / component.tsx
 post-form.tsx / user-profile-card.tsx
 ```
 
-### key prop
-
-リストレンダリングでは **安定した一意な ID** を `key` に使う。配列の index は使わない。
-
-```tsx
-// NG: index をキーに使うとリスト並び替え・フィルタ時にバグが起きる
-{
-  items.map((item, index) => <li key={index}>{item.name}</li>);
-}
-
-// Good: 安定した一意 ID を使う
-{
-  items.map((item) => <li key={item.id}>{item.name}</li>);
-}
-
-// エラーメッセージなど一意な文字列が使える場合
-{
-  errors.map((error) => <li key={error.message}>{error.message}</li>);
-}
-```
-
 ### React Compiler
 
 このプロジェクトは `reactCompiler: true` が有効。
@@ -107,72 +58,20 @@ post-form.tsx / user-profile-card.tsx
 - **`useMemo` / `useCallback` の手動最適化は不要**
 - React Compiler が自動でメモ化を最適化する
 
-### hooks
-
-- カスタムフックは `use` プレフィックス
-- 適切な依存配列を指定
-
 ## Next.js App Router
-
-### metadata（SEO）
-
-すべての `page.tsx` には `metadata` または `generateMetadata` を必ず export する。
-
-```tsx
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "ページタイトル",
-  description: "ページの説明文。",
-};
-```
-
-動的なメタデータが必要な場合：
-
-```tsx
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = await getPost(params.id);
-  return { title: post.title };
-}
-```
 
 ### cacheComponents
 
 `next.config.ts` で `cacheComponents: true` を設定済み。
 
 - データフェッチは**デフォルトで動的**
-- キャッシュしたい箇所にのみ `use cache` を明示的に付ける
-
-```tsx
-// キャッシュしたい場合のみ
-async function getData() {
-  "use cache";
-  return fetch(...);
-}
-```
-
-### Server Components と Client Components の使い分け
-
-**基本原則**: デフォルトで Server Components を使用し、必要な場合のみ Client Components を使用する
-
-#### Server Components を使用する場合
-
-- データフェッチ
-- バックエンドリソースへのアクセス
-
-#### Client Components を使用する場合
-
-- インタラクティブな機能（クリック、フォーム送信）
-- 状態管理（`useState`, `useReducer`）
-- ブラウザ API（`localStorage`, `window` など）
-- React hooks を使う場合（`useQueryStates` など）
 
 ## URL 状態管理（nuqs）
 
 URL クエリパラメータの状態管理には **nuqs** を使用する。
 
 ```ts
-// _lib/schema.ts — パーサー定義
+// lib/schema.ts — パーサー定義
 import { parseAsInteger, parseAsString } from "nuqs/server";
 
 export const filterParsers = {
@@ -184,7 +83,7 @@ export const filterParsers = {
 ```tsx
 // Client Component で使用
 import { useQueryStates } from "nuqs";
-import { filterParsers } from "../_lib/schema";
+import { filterParsers } from "../lib/schema";
 
 const [params, setParams] = useQueryStates(filterParsers);
 ```
@@ -194,13 +93,13 @@ const [params, setParams] = useQueryStates(filterParsers);
 バックエンド処理は基本的に **Server Actions** を使用する。
 
 - `"use server"` ディレクティブを付ける
-- ページ固有の Server Actions: `[feature]/actions/`
+- ページ固有の Server Actions: `route-segment/actions/`
 - 共通 Server Actions: `src/actions/`
 
 ### サーバー専用ユーティリティ（`server-only`）
 
 - クライアントから呼ぶ Server Actions には `"use server"` ディレクティブを付ける
-- それ以外のサーバー側コード（data/ など）はすべて `import "server-only"` を付ける
+- それ以外のサーバー側コードはすべて `import "server-only"` を付ける
 
 ```ts
 // actions（クライアントから呼ぶ）
@@ -216,7 +115,7 @@ export async function getPosts() { ... }
 
 #### 戻り値の型
 
-直接呼び出す Server Actions には `ActionResult<T>`（`src/types/action.ts`）を使う。
+Server Actions には `ActionResult<T>`（`src/types/action.ts`）を使う。
 
 ```ts
 import type { ActionResult } from "@/types/action";
@@ -226,8 +125,13 @@ export async function createPost(input: Input): Promise<ActionResult<Post>> {
   if (!validated.success) {
     return { success: false, error: "入力内容が正しくありません" };
   }
-  const post = await db.insert(validated.data); // DB エラーは throw → error.tsx
-  return { success: true, data: post };
+
+  try {
+    const post = await db.insert(validated.data);
+    return { success: true, data: post };
+  } catch {
+    return { success: false, error: "作成処理に失敗しました" };
+  }
 }
 ```
 
@@ -317,47 +221,10 @@ if (!post.isPublished) throw new Error("非公開データへのアクセス");
 
 UI コンポーネントライブラリとして **Mantine v8** を使用する。
 
-```tsx
-import { Button, Stack, TextInput } from "@mantine/core";
-
-<Stack gap="md">
-  <TextInput label="タイトル" placeholder="入力してください" />
-  <Button type="submit">保存</Button>
-</Stack>;
-```
-
 - `@mantine/core` — UI コンポーネント
 - `@mantine/hooks` — フック（`useDisclosure`, `useForm` など）
 
-## テスト
-
-### Vitest（ユニットテスト）
-
-- `pnpm test` — ウォッチモード
-- `pnpm test:run` — 1回実行
-- テストファイルは対象ファイルと同じディレクトリに配置（`*.test.ts`）
-
-### Playwright（E2Eテスト）
-
-- `pnpm test:e2e` — E2Eテスト実行
-- `pnpm test:e2e:ui` — UIモードで実行
-
 ## 命名規則
-
-### 変数・関数名
-
-- キャメルケース（camelCase）を使う
-- snake_case・PascalCase は NG
-
-### 定数名
-
-- UPPER_SNAKE_CASE を使う
-
-```tsx
-const ITEMS_PER_PAGE = 100;
-const DEFAULT_TIMEOUT_MS = 3000;
-const SUPPORTED_LANGUAGES = ["en", "ja"];
-```
 
 ### イベントハンドラー名
 
@@ -370,28 +237,6 @@ const handleClick = (): void => { ... };
 
 // props として受け取る
 type Props = { onClick: () => void };
-```
-
-## コーディングスタイル
-
-### `const` と `let` の使い分け
-
-- 原則 `const`、値を変更せざるを得ない場合のみ `let`、`var` は NG
-
-### 分割代入
-
-```tsx
-// Good: 段階的に分割代入
-const { user } = data;
-const { id, name, address } = user;
-const { city } = address;
-
-// NG: 深いネストの分割代入
-const {
-  user: {
-    address: { city },
-  },
-} = data;
 ```
 
 ## コメント
@@ -418,7 +263,6 @@ const {
 ### Server Actions / データ取得
 
 - エラーハンドリングが適切か
-- `use cache` の使用が適切か（不必要に付けていないか）
 
 ### セキュリティ
 

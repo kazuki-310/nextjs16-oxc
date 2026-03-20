@@ -8,6 +8,7 @@ nextjs16-oxc/
 │   ├── web/                         # Next.js 16 フロントエンドアプリ
 │   └── batch/                       # バッチ処理アプリ (Node.js)
 ├── packages/
+│   ├── database/                    # Prisma + MySQL（共有 ORM パッケージ）
 │   └── typescript-config/           # 共有 TypeScript 設定
 ├── infrastructures/
 ├── docs/
@@ -28,33 +29,31 @@ apps/web/
 ├── src/
 │   ├── app/                         # App Router
 │   │   ├── layout.tsx
-│   │   ├── page.tsx
 │   │   ├── globals.css
-│   │   ├── components/              # このルート専用コンポーネント
-│   │   │   └── post-form.tsx
-│   │   ├── lib/                     # constants.ts, utils.ts, types.ts, schema.ts
-│   │   ├── functions/                 # Server Functions
-│   │   │   ├── create-post.ts
-│   │   │   └── create-post.test.ts
-│   │   ├── data/                    # データ取得関数
+│   │   ├── (auth)/                  # 認証必須ルートグループ（ミドルウェアで保護）
+│   │   │   ├── components/
+│   │   │   ├── lib/
+│   │   │   ├── data/
+│   │   │   └── route-segment/       # 各ルート
+│   │   │       └── components/
+│   │   └── api/
+│   │       └── auth/
+│   │           └── [...all]/        # better-auth ハンドラー
+│   ├── types/                       # アプリ全体の型定義
 │   ├── components/                  # アプリ全体で共有するコンポーネント
 │   │   ├── layout/
-│   │   │   └── sidebar.tsx
 │   │   └── shared/
 │   ├── constants/
 │   ├── hooks/
 │   ├── lib/                         # 汎用ユーティリティ
-│   ├── functions/                     # アプリ全体で共有する Server Functions
+│   ├── actions/                     # アプリ全体で共有する Server Actions
 │   └── data/                        # アプリ全体で共有するデータ取得関数
 │
 ├── e2e/
-│   ├── create-post.spec.ts
-│   └── tables.spec.ts
 ├── public/
 ├── next.config.ts
 ├── playwright.config.ts
 ├── vitest.config.ts
-├── postcss.config.mjs
 └── tsconfig.json
 ```
 
@@ -62,16 +61,15 @@ apps/web/
 
 ## 命名・配置ルール
 
-### フィーチャー単位のディレクトリ
+### ルート・ルートグループ配下のディレクトリ
 
-各ルート・グループ配下に以下のディレクトリを必要に応じて置く。
-`_` プレフィックスは不要（`page.tsx` 等がなければ元々ルーティングされない）。
+各ルートセグメント・ルートグループ配下に以下のディレクトリを必要に応じて置く。
 
 | ディレクトリ  | 用途                                             |
 | ------------- | ------------------------------------------------ |
 | `components/` | そのルート・グループのみが使う UI コンポーネント |
 | `lib/`        | constants.ts, utils.ts, types.ts, schema.ts      |
-| `functions/`  | Server Functions（フォームアクション含む）       |
+| `actions/`    | Server Functions                                 |
 | `data/`       | データ取得関数                                   |
 | `hooks/`      | カスタムフック                                   |
 
@@ -85,7 +83,7 @@ apps/web/
 | `src/constants/`  | アプリ全体で共有する定数               |
 | `src/hooks/`      | カスタムフック                         |
 | `src/lib/`        | 汎用ユーティリティ                     |
-| `src/functions/`  | アプリ全体で共有する Server Functions  |
+| `src/actions/`    | アプリ全体で共有する Server Functions  |
 | `src/data/`       | アプリ全体で共有するデータ取得関数     |
 
 ---

@@ -1,8 +1,10 @@
 "use client";
 
-import { Box, NavLink, Text } from "@mantine/core";
+import { Box, Button, NavLink, Text } from "@mantine/core";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+import { signOut } from "@/lib/auth-client";
 
 const navItems = [
   { href: "/tables", label: "広告レポート" },
@@ -11,6 +13,11 @@ const navItems = [
 
 export function Sidebar(): React.JSX.Element {
   const pathname = usePathname();
+
+  const handleSignOut = async (): Promise<void> => {
+    await signOut();
+    window.location.href = "/login";
+  };
 
   return (
     <Box
@@ -34,7 +41,7 @@ export function Sidebar(): React.JSX.Element {
           広告管理
         </Text>
       </Box>
-      <Box component="nav" p="xs">
+      <Box component="nav" p="xs" style={{ flex: 1 }}>
         {navItems.map(({ href, label }) => (
           <NavLink
             key={href}
@@ -44,6 +51,11 @@ export function Sidebar(): React.JSX.Element {
             active={pathname === href}
           />
         ))}
+      </Box>
+      <Box p="xs" style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}>
+        <Button variant="subtle" color="red" size="sm" fullWidth onClick={handleSignOut}>
+          ログアウト
+        </Button>
       </Box>
     </Box>
   );
