@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@mantine/core": "^8.3.16",
+    "@mantine/dates": "^8.3.18",
     "@mantine/hooks": "^8.3.16",
     "@packages/database": "workspace:*",
     "@tanstack/react-table": "^8.21.3",
