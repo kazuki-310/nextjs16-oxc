@@ -5,6 +5,9 @@
     "no-default-export": "error",
     "import/no-cycle": "error"
   },
+  "categories": {
+    "correctness": "error"
+  },
   "overrides": [
     {
       "files": ["apps/web/**/*.{ts,tsx}"],
