@@ -9,7 +9,7 @@
     "prisma:db:pull": "prisma db pull",
     "prisma:generate": "prisma generate",
     "prisma:migrate:deploy": "prisma migrate deploy",
-    "prisma:migrate:dev": "prisma migrate dev --name init",
+    "prisma:migrate:dev": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "type-check": "tsc --noEmit"
   },
@@ -22,6 +22,6 @@
     "@packages/typescript-config": "workspace:*",
     "@types/node": "^25.3.3",
     "prisma": "^7.5.0",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   }
 }
