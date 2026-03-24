@@ -1,36 +1,44 @@
 "use client";
 
 import { Button, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { authClient } from "@/lib/auth-client";
+import { registerEmployee } from "../actions/register";
 
 export function RegisterForm(): React.JSX.Element {
   const router = useRouter();
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const name = formData.get("name") as string;
-    const nickname = formData.get("nickname") as string;
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-
     startTransition(async () => {
       setError("");
+      const identifier = String(formData.get("identifier") ?? "").trim();
+      const password = String(formData.get("password") ?? "");
 
-      const result = await authClient.signUp.email({ name, email, password, nickname });
-      if (result.error) {
-        setError(result.error.message ?? "登録に失敗しました");
+      const result = await registerEmployee({ identifier, password });
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+
+      const signInResult = await signIn("credentials", {
+        identifier: result.signInIdentifier,
+        password,
+        redirect: false,
+      });
+      if (signInResult?.error) {
+        setError("登録は完了しましたがログインに失敗しました");
         return;
       }
 
       router.push("/");
     });
-  };
+  }
 
   return (
     <Stack gap="xl" maw={400} mx="auto" mt={100} px="md">
@@ -39,26 +47,12 @@ export function RegisterForm(): React.JSX.Element {
       <form onSubmit={handleSubmit}>
         <Stack gap="md">
           <TextInput
-            label="名前"
-            name="name"
-            placeholder="名前を入力"
+            label="ニックネームまたはメールアドレス"
+            name="identifier"
+            placeholder="ニックネームまたはメールアドレスを入力"
             required
             disabled={isPending}
-          />
-          <TextInput
-            label="ニックネーム"
-            name="nickname"
-            placeholder="ニックネームを入力"
-            required
-            disabled={isPending}
-          />
-          <TextInput
-            label="メールアドレス"
-            name="email"
-            type="email"
-            placeholder="メールアドレスを入力"
-            required
-            disabled={isPending}
+            autoComplete="username"
           />
           <PasswordInput
             label="パスワード"
@@ -66,6 +60,7 @@ export function RegisterForm(): React.JSX.Element {
             placeholder="パスワードを入力"
             required
             disabled={isPending}
+            autoComplete="new-password"
           />
 
           {error && (

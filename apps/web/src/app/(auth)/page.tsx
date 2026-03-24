@@ -1,3 +1,3 @@
-export default function Page(): React.JSX.Element {
+export default async function Page(): Promise<React.JSX.Element> {
   return <div>Page</div>;
 }
