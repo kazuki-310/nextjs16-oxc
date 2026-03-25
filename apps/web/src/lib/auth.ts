@@ -6,6 +6,7 @@ import Credentials from "next-auth/providers/credentials";
 import { signInSchema } from "@/lib/credentials-schema";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {
