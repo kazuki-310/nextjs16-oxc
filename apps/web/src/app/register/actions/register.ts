@@ -1,9 +1,9 @@
 "use server";
 
 import { prisma } from "@packages/database";
-import { hash } from "bcryptjs";
+import { hash } from "bcrypt";
 
-import { signInSchema } from "@/lib/credentials-schema";
+import { authSchema } from "@/lib/auth-schema";
 
 export type RegisterResult =
   | { ok: true; signInIdentifier: string }
@@ -13,7 +13,7 @@ export async function registerEmployee(input: {
   identifier: string;
   password: string;
 }): Promise<RegisterResult> {
-  const parsed = signInSchema.safeParse({
+  const parsed = authSchema.safeParse({
     identifier: input.identifier,
     password: input.password,
   });

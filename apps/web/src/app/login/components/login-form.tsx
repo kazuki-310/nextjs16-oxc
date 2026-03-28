@@ -1,30 +1,31 @@
 "use client";
 
-import { Button, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { Button, PasswordInput, Stack, TextInput, Title } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+
+import { loginAction } from "../actions/login";
+
+type FormValues = {
+  identifier: string;
+  password: string;
+};
 
 export function LoginForm(): React.JSX.Element {
-  const router = useRouter();
-  const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  const { register, handleSubmit } = useForm<FormValues>();
+
+  function onSubmit(values: FormValues): void {
     startTransition(async () => {
-      setError("");
-      const result = await signIn("credentials", {
-        redirect: false,
-        identifier: String(formData.get("identifier") ?? "").trim(),
-        password: String(formData.get("password") ?? ""),
-      });
-      if (result?.error) {
-        setError("メールアドレス/ニックネームまたはパスワードが正しくありません");
-        return;
+      const result = await loginAction(values.identifier, values.password);
+      if (!result?.success) {
+        notifications.show({
+          color: "red",
+          message: result.error,
+        });
       }
-      router.push("/");
     });
   }
 
@@ -32,30 +33,22 @@ export function LoginForm(): React.JSX.Element {
     <Stack gap="xl" maw={400} mx="auto" mt={100} px="md">
       <Title order={2}>ログイン</Title>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <Stack gap="md">
           <TextInput
             label="ニックネームまたはメールアドレス"
-            name="identifier"
             placeholder="ニックネームまたはメールアドレスを入力"
-            required
-            disabled={isPending}
             autoComplete="username"
+            disabled={isPending}
+            {...register("identifier")}
           />
           <PasswordInput
             label="パスワード"
-            name="password"
             placeholder="パスワードを入力"
-            required
-            disabled={isPending}
             autoComplete="current-password"
+            disabled={isPending}
+            {...register("password")}
           />
-
-          {error && (
-            <Text c="red" size="sm">
-              {error}
-            </Text>
-          )}
 
           <Button type="submit" loading={isPending}>
             ログイン

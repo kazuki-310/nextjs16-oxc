@@ -8,14 +8,16 @@ datasource db {
 }
 
 model Employee {
-  id        Int            @id @default(autoincrement())
-  name      String         @unique
-  nickname  String?        @unique
-  email     String?        @unique
-  password  String
-  status    EmployeeStatus
-  createdAt DateTime       @default(now()) @map("created_at")
-  updatedAt DateTime       @updatedAt @map("updated_at")
+  id                  Int            @id @default(autoincrement())
+  name                String         @unique
+  nickname            String?        @unique
+  email               String?        @unique
+  password            String
+  status              EmployeeStatus
+  failedLoginAttempts Int            @default(0) @map("failed_login_attempts")
+  unlockAt            DateTime?      @map("unlock_at")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
 
   @@map("employees")
 }
@@ -23,7 +25,7 @@ model Employee {
 enum EmployeeStatus {
   ACTIVE
   INACTIVE
-  ON_LEAVE
+  PENDING
 
   @@map("employee_status")
 }

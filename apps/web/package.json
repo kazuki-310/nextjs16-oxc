@@ -14,14 +14,16 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@mantine/core": "^8.3.16",
     "@mantine/dates": "^8.3.18",
     "@mantine/hooks": "^8.3.16",
+    "@mantine/notifications": "^8.3.18",
     "@packages/database": "workspace:*",
     "@prisma/client": "^7.5.0",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.21",
-    "bcryptjs": "^3.0.3",
+    "bcrypt": "^6.0.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.20",
     "next": "16.1.6",
@@ -29,11 +31,13 @@
     "nuqs": "^2.8.9",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-hook-form": "^7.72.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@packages/typescript-config": "workspace:*",
     "@playwright/test": "^1.58.2",
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^25.3.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",

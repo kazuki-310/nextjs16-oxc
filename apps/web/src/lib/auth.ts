@@ -1,9 +1,19 @@
 import { prisma } from "@packages/database";
-import { compare } from "bcryptjs";
-import NextAuth from "next-auth";
+import { compare } from "bcrypt";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
-import { signInSchema } from "@/lib/credentials-schema";
+import { authSchema } from "@/lib/auth-schema";
+import {
+  getEffectiveFailedAttempts,
+  isAccountLocked,
+  recordFailedLogin,
+  resetLoginAttempts,
+} from "@/lib/brute-force";
+
+export class AccountLockedError extends CredentialsSignin {
+  code = "account_locked";
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
@@ -22,50 +32,41 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
       },
       async authorize(credentials) {
-        const parsed = signInSchema.safeParse(credentials);
-        if (!parsed.success) {
-          return null;
-        }
-        const { identifier: raw, password } = parsed.data;
+        const { identifier, password } = await authSchema.parseAsync(credentials);
 
-        const employee = raw.includes("@")
-          ? await prisma.employee.findFirst({ where: { email: raw.toLowerCase() } })
-          : await prisma.employee.findFirst({ where: { nickname: raw } });
+        const employee = await prisma.employee.findFirst({
+          where: { OR: [{ email: identifier }, { nickname: identifier }] },
+        });
         if (!employee) {
-          return null;
+          throw new Error("ユーザーが存在しません");
         }
+
+        if (isAccountLocked(employee)) {
+          throw new AccountLockedError();
+        }
+
+        const currentAttempts = getEffectiveFailedAttempts(employee);
 
         const valid = await compare(password, employee.password);
         if (!valid) {
-          return null;
+          await recordFailedLogin(employee.id, currentAttempts);
+          throw new Error("パスワードが正しくありません");
         }
 
-        return {
-          id: String(employee.id),
-          name: employee.name,
-          email: employee.email ?? "",
-          status: employee.status,
-        };
+        await resetLoginAttempts(employee.id);
+
+        return { id: String(employee.id) };
       },
     }),
   ],
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 60 * 60 * 24, // 1日
+  },
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.sub = user.id;
-        token.name = user.name;
-        token.email = user.email;
-        token.status = user.status;
-      }
-      return token;
-    },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub ?? "";
-        session.user.name = token.name ?? "";
-        session.user.email = token.email ?? "";
-        session.user.status = token.status ?? "ACTIVE";
       }
       return session;
     },

@@ -1,4 +1,5 @@
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import type { Metadata } from "next";
 
 import "./globals.css";
@@ -21,6 +22,7 @@ export default function RootLayout({
       </head>
       <body>
         <MantineProvider>
+          <Notifications />
           <NuqsAdapter>{children}</NuqsAdapter>
         </MantineProvider>
       </body>

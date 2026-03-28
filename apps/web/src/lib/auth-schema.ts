@@ -1,6 +1,6 @@
-import { object, string } from "zod";
+import z, { object, string } from "zod";
 
-export const signInSchema = object({
+export const authSchema = object({
   identifier: string({
     error: "ニックネームまたはメールアドレスを入力してください",
   })
@@ -15,3 +15,5 @@ export const signInSchema = object({
     .min(8, "パスワードは8文字以上で入力してください")
     .max(32, "パスワードは32文字以内で入力してください"),
 });
+
+export type AuthSchema = z.infer<typeof authSchema>;
