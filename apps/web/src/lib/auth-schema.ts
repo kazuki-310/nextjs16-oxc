@@ -9,6 +9,10 @@ export const authSchema = object({
     .refine(
       (val) => !val.includes("@") || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
       "メールアドレスの形式が正しくありません",
+    )
+    .refine(
+      (val) => val.includes("@") || /^[a-zA-Z0-9._-]+$/.test(val),
+      "ニックネームに使えるのは英数字・._- のみです",
     ),
   password: string({ error: "パスワードを入力してください" })
     .min(1, "パスワードを入力してください")

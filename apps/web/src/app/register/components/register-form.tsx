@@ -1,75 +1,61 @@
 "use client";
 
-import { Button, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, PasswordInput, Stack, TextInput, Title } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
+
+import { authSchema } from "@/lib/auth-schema";
 
 import { registerEmployee } from "../actions/register";
 
 export function RegisterForm(): React.JSX.Element {
-  const router = useRouter();
-  const [error, setError] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const { form, action, handleSubmitWithAction } = useHookFormAction(
+    registerEmployee,
+    zodResolver(authSchema),
+    {
+      formProps: {
+        defaultValues: { identifier: "", password: "" },
+      },
+      actionProps: {
+        onError: ({ error }) => {
+          if (error.serverError) {
+            notifications.show({ color: "red", message: error.serverError });
+          }
+        },
+      },
+    },
+  );
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    startTransition(async () => {
-      setError("");
-      const identifier = String(formData.get("identifier") ?? "").trim();
-      const password = String(formData.get("password") ?? "");
-
-      const result = await registerEmployee({ identifier, password });
-      if (!result.ok) {
-        setError(result.message);
-        return;
-      }
-
-      const signInResult = await signIn("credentials", {
-        identifier: result.signInIdentifier,
-        password,
-        redirect: false,
-      });
-      if (signInResult?.error) {
-        setError("登録は完了しましたがログインに失敗しました");
-        return;
-      }
-
-      router.push("/");
-    });
-  }
+  const {
+    register,
+    formState: { errors },
+  } = form;
 
   return (
     <Stack gap="xl" maw={400} mx="auto" mt={100} px="md">
       <Title order={2}>従業員登録</Title>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmitWithAction}>
         <Stack gap="md">
           <TextInput
             label="ニックネームまたはメールアドレス"
-            name="identifier"
             placeholder="ニックネームまたはメールアドレスを入力"
-            required
-            disabled={isPending}
             autoComplete="username"
+            error={errors.identifier?.message}
+            disabled={action.isExecuting}
+            {...register("identifier")}
           />
           <PasswordInput
             label="パスワード"
-            name="password"
             placeholder="パスワードを入力"
-            required
-            disabled={isPending}
             autoComplete="new-password"
+            error={errors.password?.message}
+            disabled={action.isExecuting}
+            {...register("password")}
           />
 
-          {error && (
-            <Text c="red" size="sm">
-              {error}
-            </Text>
-          )}
-
-          <Button type="submit" loading={isPending}>
+          <Button type="submit" loading={action.isExecuting}>
             登録
           </Button>
         </Stack>
