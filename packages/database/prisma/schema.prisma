@@ -8,50 +8,49 @@ datasource db {
 }
 
 model Employee {
-  id              String    @id
-  name            String
-  nickname        String    @unique
-  email           String    @unique
-  emailVerified   Boolean   @default(false)
-  image           String?
-  passwordChanged Boolean   @default(false)
-  createdAt       DateTime
-  updatedAt       DateTime
-  sessions        Session[]
-  accounts        Account[]
+  id                  Int            @id @default(autoincrement())
+  name                String         @unique
+  nickname            String?        @unique
+  email               String?        @unique
+  password            String
+  status              EmployeeStatus
+  failedLoginAttempts Int            @default(0) @map("failed_login_attempts")
+  unlockAt            DateTime?      @map("unlock_at")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+  posts               Post[]
+  todos               Todo[]
 
   @@map("employees")
 }
 
-model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String   @unique
-  createdAt DateTime
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      Employee @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Todo {
+  id        Int      @id @default(autoincrement())
+  title     String
+  done      Boolean  @default(false)
+  authorId  Int      @map("author_id")
+  author    Employee @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
 
-  @@map("sessions")
+  @@map("todos")
 }
 
-model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  user                  Employee  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime
-  updatedAt             DateTime
+model Post {
+  id         Int      @id @default(autoincrement())
+  title      String
+  content    String   @db.Text
+  authorId   Int      @map("author_id")
+  author     Employee @relation(fields: [authorId], references: [id])
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
-  @@map("accounts")
+  @@map("posts")
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+
+  @@map("employee_status")
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { Box, Button, NavLink, Text } from "@mantine/core";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-import { signOut } from "@/lib/auth-client";
 
 const navItems = [
   { href: "/tables", label: "広告レポート" },
@@ -15,8 +14,7 @@ export function Sidebar(): React.JSX.Element {
   const pathname = usePathname();
 
   const handleSignOut = async (): Promise<void> => {
-    await signOut();
-    window.location.href = "/login";
+    await signOut({ callbackUrl: "/login" });
   };
 
   return (

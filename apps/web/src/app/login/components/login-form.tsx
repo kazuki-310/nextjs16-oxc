@@ -1,71 +1,59 @@
 "use client";
 
-import { Button, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, PasswordInput, Stack, TextInput, Title } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
 
-import { signIn } from "@/lib/auth-client";
+import { authSchema } from "@/lib/auth-schema";
 
-import { resolveEmail } from "../actions/login";
+import { loginAction } from "../actions/login";
 
 export function LoginForm(): React.JSX.Element {
-  const router = useRouter();
-  const [error, setError] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const { form, action, handleSubmitWithAction } = useHookFormAction(
+    loginAction,
+    zodResolver(authSchema),
+    {
+      formProps: {
+        defaultValues: { identifier: "", password: "" },
+      },
+      actionProps: {
+        onError: ({ error }) => {
+          notifications.show({ color: "red", message: error.serverError });
+        },
+      },
+    },
+  );
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const identifier = formData.get("identifier") as string;
-    const password = formData.get("password") as string;
-
-    startTransition(async () => {
-      setError("");
-
-      const email = await resolveEmail(identifier);
-      if (!email) {
-        setError("ユーザーが見つかりません");
-        return;
-      }
-
-      const result = await signIn.email({ email, password });
-      if (result.error) {
-        setError("メールアドレス/ニックネームまたはパスワードが正しくありません");
-        return;
-      }
-
-      router.push("/");
-    });
-  };
+  const {
+    register,
+    formState: { errors },
+  } = form;
 
   return (
     <Stack gap="xl" maw={400} mx="auto" mt={100} px="md">
       <Title order={2}>ログイン</Title>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmitWithAction}>
         <Stack gap="md">
           <TextInput
             label="ニックネームまたはメールアドレス"
-            name="identifier"
             placeholder="ニックネームまたはメールアドレスを入力"
-            required
-            disabled={isPending}
+            autoComplete="username"
+            error={errors.identifier?.message}
+            disabled={action.isExecuting}
+            {...register("identifier")}
           />
           <PasswordInput
             label="パスワード"
-            name="password"
             placeholder="パスワードを入力"
-            required
-            disabled={isPending}
+            autoComplete="current-password"
+            error={errors.password?.message}
+            disabled={action.isExecuting}
+            {...register("password")}
           />
 
-          {error && (
-            <Text c="red" size="sm">
-              {error}
-            </Text>
-          )}
-
-          <Button type="submit" loading={isPending}>
+          <Button type="submit" loading={action.isExecuting}>
             ログイン
           </Button>
         </Stack>
