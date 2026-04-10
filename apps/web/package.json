@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "analyze": "next experimental-analyze",
+    "analyze:output": "next experimental-analyze --output",
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
