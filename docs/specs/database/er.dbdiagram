@@ -1,0 +1,46 @@
+// er.dbml と同一内容。スキーマ変更時は両方を揃えること（dbdiagram.io 用ファイル名）
+
+Enum employee_status {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+Table employees {
+  id int [pk, increment, note: '主キー']
+  name varchar [unique, not null, note: '表示名・登録時は identifier と同一の場合あり']
+  nickname varchar [unique, note: 'ニックネームログイン用']
+  email varchar [unique, note: 'メールログイン用']
+  password varchar [not null, note: 'bcrypt ハッシュ']
+  status employee_status [not null, note: '従業員状態']
+  failed_login_attempts int [not null, default: 0, note: '連続ログイン失敗回数']
+  unlock_at datetime [note: 'ロック解除予定時刻']
+  created_at datetime [not null, default: `now()`, note: '作成日時']
+  updated_at datetime [not null, note: '更新日時']
+
+  Note: '''
+    認証ユーザー（従業員）。
+    nickname / email はどちらか一方または両方の運用を想定（アプリ側で排他登録）。
+  '''
+}
+
+Table todos {
+  id int [pk, increment]
+  title varchar [not null]
+  done boolean [not null, default: false]
+  author_id int [not null, ref: > employees.id, note: '作成者']
+  created_at datetime [not null, default: `now()`]
+
+  Note: 'Todo アイテム'
+}
+
+Table posts {
+  id int [pk, increment]
+  title varchar [not null]
+  content text [not null, note: '本文']
+  author_id int [not null, ref: > employees.id, note: '投稿者']
+  created_at datetime [not null, default: `now()`]
+  updated_at datetime [not null]
+
+  Note: '投稿'
+}
