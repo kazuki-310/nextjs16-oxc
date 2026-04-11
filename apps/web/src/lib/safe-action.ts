@@ -23,6 +23,10 @@ export const authClient = actionClient.use(async ({ next }) => {
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
   }
+  const userId = parseInt(session.user.id, 10);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    throw new Error("Unauthorized");
+  }
 
   return next({ ctx: { session } });
 });

@@ -20,6 +20,7 @@ model Employee {
   updatedAt           DateTime       @updatedAt @map("updated_at")
   posts               Post[]
   todos               Todo[]
+  memos               Memo[]
 
   @@map("employees")
 }
@@ -45,6 +46,18 @@ model Post {
   updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@map("posts")
+}
+
+model Memo {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String   @db.Text
+  authorId  Int      @map("author_id")
+  author    Employee @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("memos")
 }
 
 enum EmployeeStatus {

@@ -1,17 +1,21 @@
 ---
 paths:
-  - "apps/**/*.{ts,tsx}"
+  - "apps/web/src/**/*.{ts,tsx}"
 ---
 
 # コード規約
 
-## ファイル・ディレクトリ命名規則
+## 概要
 
-- ファイル名: `kebab-case`
-- ディレクトリ名: `kebab-case`
-- コンポーネントファイル名: `kebab-case`
+このドキュメントは、Claude Code が一貫性のあるコードを出力するためのガイドラインです。
 
-詳細なディレクトリ構造については `directory-structure.md` を参照。
+**基本方針:**
+
+- 可読性と保守性を最優先
+- 一貫性のあるコーディングスタイル
+- チーム全体で同じルールに従う
+
+---
 
 ## TypeScript
 
@@ -19,258 +23,421 @@ paths:
 
 - すべての関数・変数に適切な型を付与
 - `any` の使用は避け、適切な型を定義
-- 型定義は `type` を使用（`interface` は使わない）
+- 型定義は `type` を使用
 - 型名: `PascalCase`
 
+### Props 型定義
+
+- コンポーネントの Props は専用の型を定義
+- 型名: コンポーネント名 + `Props`
+
 ```tsx
-// NG
-interface User {
-  id: string;
-  name: string;
-}
-
-// Good
-type User = {
-  id: string;
-  name: string;
+// ✅ Good: Props 型を定義
+type UserCardProps = {
+  userId: string;
+  onUpdate?: (user: User) => void;
 };
+
+export function UserCard({ userId, onUpdate }: UserCardProps) {
+  // ...
+}
 ```
 
-## React
-
-### コンポーネント名の命名規則
-
-- 目的に沿った具体的な名前を使用する
-- 汎用的すぎる名前は避ける
-
-```
-// NG
-client.tsx / component.tsx
-
-// Good
-post-form.tsx / user-profile-card.tsx
-```
-
-### React Compiler
-
-このプロジェクトは `reactCompiler: true` が有効。
-
-- **`useMemo` / `useCallback` の手動最適化は不要**
-- React Compiler が自動でメモ化を最適化する
+---
 
 ## Next.js App Router
 
-### cacheComponents
+### Server Actions
 
-`next.config.ts` で `cacheComponents: true` を設定済み。
+[next-safe-action](https://next-safe-action.dev/) を使用して管理します。Next.js の Server Actions にバリデーション、エラーハンドリング、型安全性を提供するライブラリ。
 
-- データフェッチは**デフォルトで動的**
-
-## URL 状態管理（nuqs）
-
-URL クエリパラメータの状態管理には **nuqs** を使用する。
+**Safe Actions 設定:**
+各アクションに適した Client を Server Actions 側で呼び出します
 
 ```ts
-// lib/schema.ts — パーサー定義
-import { parseAsInteger, parseAsString } from "nuqs/server";
+// src/lib/safe-action.ts
+export const actionClient = createSafeActionClient({});
+export const authClient = actionClient.use(async ({ next }) => {});
+```
 
-export const filterParsers = {
-  name: parseAsString.withDefault(""),
-  minImpressions: parseAsInteger.withDefault(0),
+**エラーハンドリングの使い分け:**
+
+| エラータイプ                   | 方法                                                                                | 出力先                      | 用途                                                    |
+| ------------------------------ | ----------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------- |
+| フィールドバリデーションエラー | `returnValidationErrors()`                                                          | フォーム上の該当フィールド  | 入力値が要件を満たさない（必須、文字数など）            |
+| ビジネスロジックエラー（詳細） | try で `throw new ActionError()` → catch で instanceof ActionError で再 throw       | toast通知（onError）        | recordNotFound など詳細メッセージをユーザーに伝える     |
+| 予期しないエラー（汎用）       | try で Error/Prisma エラー → catch で `throw new ActionError(ERROR_MESSAGE)` に変換 | toast通知（汎用メッセージ） | DB エラー・その他予期しないエラーを汎用メッセージで表示 |
+
+#### スキーマ定義
+
+バリデーションライブラリの zod を使う
+
+```ts
+import { z } from "zod";
+
+export const updatePostSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  content: z.string(),
+});
+```
+
+#### Server Actions（サーバー側）
+
+```ts
+"use server";
+import { Prisma, prisma } from "@packages/database";
+import { redirect } from "next/navigation";
+import { returnValidationErrors } from "next-safe-action";
+import { ActionError, actionClient } from "@/lib/safe-action";
+import { ERROR_MESSAGE } from "@/constants/message";
+
+export const updatePost = actionClient
+  .inputSchema(updatePostSchema)
+  .action(async ({ parsedInput }) => {
+    const { id, title, content } = parsedInput;
+
+    if (!title || title.trim().length === 0) {
+      returnValidationErrors(updatePostSchema, {
+        title: { _errors: ["タイトルは必須です"] },
+      });
+    }
+
+    try {
+      const post = await prisma.post.findUnique({
+        where: { id },
+      });
+      if (!post) {
+        throw new ActionError(ERROR_MESSAGE.recordNotFound);
+      }
+
+      await prisma.post.update({
+        where: { id },
+        data: {
+          title,
+          content,
+        },
+      });
+    } catch (error) {
+      if (error instanceof ActionError) {
+        throw error;
+      }
+
+      // NOTE: 例外的な処理
+      throw new ActionError(ERROR_MESSAGE.updateError);
+    }
+
+    // NOTE: try/catch の外で redirect 定義する必要がある
+    redirect("/posts");
+  });
+```
+
+**画面遷移について:**
+
+- `redirect()`: サーバー側で画面遷移を指定。クライアント側の `useHookFormAction` では `onNavigation` コールバックで `navigationKind === "redirect"` を検知できる
+
+#### useHookFormAction（フォーム処理）
+
+フォーム処理は React Hook Form と next-safe-action のアダプタを組み合わせます。
+
+- [React Hook Form](https://next-safe-action.dev/docs/integrations/react-hook-form)
+
+```tsx
+import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { notifications } from "@mantine/notifications";
+import { SUCCESS_MESSAGE } from "@/constants/message";
+
+type UpdatePostFormProps = {
+  defaultValues: {
+    id: string;
+    title: string;
+    content: string;
+  };
+};
+
+export function UpdatePostForm({ defaultValues }: UpdatePostFormProps) {
+  const { form, handleSubmitWithAction, action, resetFormAndAction } = useHookFormAction(
+    updatePost,
+    zodResolver(updatePostSchema),
+    {
+      formProps: {
+        defaultValues,
+      },
+      actionProps: {
+        onNavigation: ({ navigationKind }) => {
+          if (navigationKind === "redirect") {
+            notifications.show({
+              message: SUCCESS_MESSAGE.recordUpdated,
+            });
+          }
+          resetFormAndAction();
+        },
+        onError: ({ error }) => {
+          if (error.serverError) {
+            notifications.show({
+              message: error.serverError,
+              color: "red",
+            });
+          }
+        },
+      },
+    },
+  );
+
+  return (
+    <form onSubmit={handleSubmitWithAction}>
+      <TextInput
+        label="タイトル"
+        {...form.register("title")}
+        error={
+          action.result.validationErrors?.fieldErrors?.title?.[0] ||
+          form.formState.errors.title?.message
+        }
+        disabled={action.isPending}
+      />
+      <Button type="submit" disabled={action.isPending} mt="md">
+        更新
+      </Button>
+    </form>
+  );
+}
+```
+
+#### useOptimisticAction（楽観的更新）
+
+削除、ステータス変更などで、サーバーからの応答を待たずに UI を即座に更新する場合に使用する。
+
+```tsx
+import { useOptimisticAction } from "next-safe-action/hooks";
+import { deletePostAction } from "../actions/delete-post";
+
+const {
+  execute: executeDelete,
+  isPending,
+  optimisticState,
+} = useOptimisticAction(deletePostAction, {
+  currentState: posts,
+  updateFn: (currentPosts, input) => currentPosts.filter((post) => post.id !== input.id),
+});
+```
+
+### データ取得処理
+
+サーバー側データ取得処理は、専用の `data` ディレクトリに配置します。**サーバー側でのみ使うデータ取得関数には `"server-only"` を付与します。**
+
+#### ファイル配置
+
+- グローバルなデータ取得関数：`src/data/`
+- ページ特定のデータ取得関数：`src/app/[path]/data/`
+
+#### `"server-only"` の役割
+
+`"server-only"` をインポートすると、以下のことが保証されます：
+
+- サーバー側でのみ実行されるコード
+- クライアント側で誤ってインポートされることを防止
+
+#### `await connection()` が必須な理由
+
+動的にデータアクセスしたい場合、`await connection()` を最初に呼び出してください。
+
+これにより、キャッシュされたコンポーネント内で動的コンテンツを生成することを明示的に伝えます。
+(Next.js CacheComponent: true にする場合必要な設定)
+
+```ts
+import "server-only";
+import { ERROR_MESSAGE } from "@/constants/message";
+import { prisma } from "@packages/database";
+import { connection } from "next/server";
+
+export const getPost = cache(async (id: number) => {
+  // NOTE: 動的データアクセス時は必須
+  await connection();
+
+  const post = await prisma.post.findUnique({
+    where: { id },
+  });
+
+  if (!post) {
+    throw new Error(ERROR_MESSAGE.recordNotFound);
+  }
+
+  return post;
+});
+```
+
+### Suspense によるストリーミングデータ取得
+
+非同期データ取得は `<Suspense>` でラップしてストリーミングします。
+
+```tsx
+import { Suspense } from "react";
+import { PostContainer } from "./components/post-container";
+import { PostsGridSkeleton } from "./components/posts-grid-skeleton";
+
+export default function Page() {
+  return (
+    <Container>
+      <Title>ポスト一覧</Title>
+      <Suspense fallback={<PostsGridSkeleton />}>
+        <PostContainer />
+      </Suspense>
+    </Container>
+  );
+}
+```
+
+```tsx
+import { getPosts } from "../data/get-posts";
+import { PostsGrid } from "./posts-grid";
+
+export async function PostContainer() {
+  const posts = await getPosts();
+  return <PostsGrid posts={posts} />;
+}
+```
+
+### URL 状態管理（nuqs）
+
+フィルタ条件などの URL 状態管理には `nuqs` を使用します。
+
+#### 基本方針
+
+- パーサー定義とバリデーションスキーマは `lib/schema.ts` にまとめて定義する
+- Server Component では `createSearchParamsCache` でパラメータを取得する
+
+#### 例
+
+```ts
+import { parseAsString, parseAsStringEnum } from "nuqs/server";
+
+export const exampleFilterParsers = {
+  name: parseAsString,
+  status: parseAsStringEnum(["active", "inactive"]),
 };
 ```
 
 ```tsx
-// Client Component で使用
-import { useQueryStates } from "nuqs";
-import { filterParsers } from "../lib/schema";
+import { parseAsString, useQueryState, useQueryStates } from "nuqs";
+import { exampleFilterParsers } from "../lib/schema";
 
-const [params, setParams] = useQueryStates(filterParsers);
-```
-
-## Server Actions
-
-バックエンド処理は基本的に **Server Actions** を使用する。
-
-- `"use server"` ディレクティブを付ける
-- ページ固有の Server Actions: `route-segment/actions/`
-- 共通 Server Actions: `src/actions/`
-
-### サーバー専用ユーティリティ（`server-only`）
-
-- クライアントから呼ぶ Server Actions には `"use server"` ディレクティブを付ける
-- それ以外のサーバー側コードはすべて `import "server-only"` を付ける
-
-```ts
-// actions（クライアントから呼ぶ）
-"use server";
-export async function createPost() { ... }
-
-// data（RSC から呼ぶ）
-import "server-only";
-export async function getPosts() { ... }
-```
-
-### エラーハンドリング
-
-#### 戻り値の型
-
-Server Actions には `ActionResult<T>`（`src/types/action.ts`）を使う。
-
-```ts
-import type { ActionResult } from "@/types/action";
-
-export async function createPost(input: Input): Promise<ActionResult<Post>> {
-  const validated = PostSchema.safeParse(input);
-  if (!validated.success) {
-    return { success: false, error: "入力内容が正しくありません" };
-  }
-
-  try {
-    const post = await db.insert(validated.data);
-    return { success: true, data: post };
-  } catch {
-    return { success: false, error: "作成処理に失敗しました" };
-  }
-}
-```
-
-#### try-catch の方針
-
-- **バリデーションエラー**: try-catch 不要。`safeParse` などで処理
-- **予期できる DB エラー**（ユニーク制約など）: catch してユーザー向けメッセージを返す
-- **予期しないエラー**（DB 障害など）: catch せず throw → `error.tsx` に任せる
-- catch しても再スローするだけなら try-catch ごと不要
-
-```ts
-try {
-  const post = await db.insert(data);
-  return { success: true, data: post };
-} catch (e) {
-  if (isUniqueConstraintError(e)) {
-    return { success: false, error: "すでに存在しています" };
-  }
-  throw e; // 予期しないエラーは再スロー
-}
-```
-
-#### redirect() の注意点
-
-`redirect()` は内部で例外を throw するため **try ブロックの外** に置く。
-
-```ts
-// NG: catch に捕まる
-try {
-  await db.insert(data);
-  redirect("/posts");
-} catch (e) { ... }
-
-// Good
-try {
-  await db.insert(data);
-} catch (e) { ... }
-
-redirect("/posts"); // try の外
-```
-
-## データ取得（data/）
-
-RSC から呼ぶデータ取得関数のエラーハンドリング。**try-catch は不要**。
-
-### React cache()
-
-`data/` の関数は `React.cache()` で囲む。同一リクエスト内で複数のコンポーネントから呼ばれても DB アクセスが1回になる。
-
-```ts
-import "server-only";
-
-import { cache } from "react";
-import { prisma } from "@packages/database";
-
-export const getPosts = cache(async (): Promise<Post[]> => {
-  return prisma.post.findMany({ orderBy: { id: "desc" } });
+// NOTE: パラメータが単一の場合 → `useQueryState`
+const [tab, setTab] = useQueryState("tab", parseAsString);
+// NOTE: パラメータが複数の場合 → `useQueryStates` でまとめて管理
+const [filters, setFilters] = useQueryStates(exampleFilterParsers, {
+  history: "push",
 });
 ```
 
-```ts
-import "server-only";
-import { notFound } from "next/navigation";
+```tsx
+import { SearchParams, createSearchParamsCache } from "nuqs/server";
+import { exampleFilterParsers } from "./lib/schema";
 
-export async function getPost(id: string): Promise<Post> {
-  const post = await db.query(id); // DB エラーは throw → error.tsx
-  if (!post) notFound(); // → not-found.tsx（404）
-  return post;
+const searchParamsCache = createSearchParamsCache(exampleFilterParsers);
+
+export default async function Page({ searchParams }: { searchParams: SearchParams }) {
+  const query = searchParamsCache.parse(searchParams);
+  // query.name, query.status で型安全にアクセス可能
 }
-
-// 業務ロジック上の異常は throw new Error → error.tsx
-if (!post.isPublished) throw new Error("非公開データへのアクセス");
 ```
 
-| 状況                        | 対処                                 |
-| --------------------------- | ------------------------------------ |
-| データが存在しない          | `notFound()` → not-found.tsx（404）  |
-| 業務ロジック上の異常        | `throw new Error("...")` → error.tsx |
-| DB 障害など予期しないエラー | そのまま throw → error.tsx           |
+---
 
-- `ActionResult<T>` は不要（エラーをクライアントに返す必要がないため）
-- try-catch で全エラーを隠さない（障害が検知できなくなる）
+## UI & スタイリング
 
-## スタイリング
+### Mantine コンポーネント
 
-### Mantine
-
-UI コンポーネントライブラリとして **Mantine v8** を使用する。
-
-- `@mantine/core` — UI コンポーネント
-- `@mantine/hooks` — フック（`useDisclosure`, `useForm` など）
-
-## 命名規則
-
-### イベントハンドラー名
-
-- `handle` プレフィックス: コンポーネント内部のイベント処理
-- `on` プレフィックス: 親から受け取る props のコールバック
+UI コンポーネントライブラリとして [Mantine](https://mantine.dev/) を使用します。
 
 ```tsx
-// 内部処理
-const handleClick = (): void => { ... };
+import { Button, TextInput, Group } from "@mantine/core";
 
-// props として受け取る
-type Props = { onClick: () => void };
+export function LoginForm() {
+  return (
+    <form>
+      <TextInput label="Email" placeholder="your@email.com" />
+      <Group justify="flex-end" mt="md">
+        <Button type="submit">Sign in</Button>
+      </Group>
+    </form>
+  );
+}
 ```
 
-## コメント
+**原則:**
 
-- コードの意図が明確な場合、コメントは基本不要
+- Mantine コンポーネントを優先使用
+- スタイルは `props` もしくは `styles` で指定する
+
+### アイコン（@tabler/icons-react）
+
+原則、アイコンは `@tabler/icons-react` のみを使用します。
+
+```tsx
+import { IconUser, IconLogout } from "@tabler/icons-react";
+
+export function UserMenu() {
+  return (
+    <>
+      <IconUser size={20} />
+      <IconLogout size={20} />
+    </>
+  );
+}
+```
+
+---
+
+## イベントハンドラー名の規則
+
+**`handle` vs `on` の使い分け:**
+
+- **`handle`**: コンポーネント内部でイベント処理する関数
+- **`on`**: 親から `props` で受け取るコールバック関数
+
+```tsx
+// ✅ Good: 内部処理は handle
+function MyComponent() {
+  const handleClick = () => {
+    console.log("clicked");
+  };
+  return <button onClick={handleClick}>Click</button>;
+}
+
+// ✅ Good: props は on
+type ButtonProps = {
+  onClick: () => void;
+};
+
+function Button({ onClick }: ButtonProps) {
+  return <button onClick={onClick}>Click</button>;
+}
+```
+
+---
+
+## コメント・ドキュメンテーション
+
+### 基本原則
+
+- コードの意図が明確な場合、コメントは基本的に不要
+- 過多なコメントを避ける
 
 ### アノテーションコメント
 
-| タグ       | 説明                                             |
-| ---------- | ------------------------------------------------ |
-| `TODO`     | あとで作業するべきこと                           |
-| `NOTE`     | 重要な情報やコードの説明                         |
-| `FIXME`    | 不具合のあるコード、修正が必要                   |
-| `OPTIMIZE` | パフォーマンス向上のためのリファクタリング       |
-| `WARNING`  | 注意が必要で、慎重に修正しなければならないコード |
+コードの特定要素に追加情報を提供するために使用：
 
-## コードレビュー観点
+| タグ       | 説明                                 |
+| ---------- | ------------------------------------ |
+| `TODO`     | あとで作業するべきこと（実装、修正） |
+| `NOTE`     | 重要な情報やコードの説明             |
+| `FIXME`    | 不具合のあるコード、修正が必要       |
+| `OPTIMIZE` | パフォーマンス向上のため改善が必要   |
+| `WARNING`  | 注意が必要で慎重に修正すべきコード   |
 
-### パフォーマンス
-
-- 不要な再レンダリングが発生していないか（React Compiler に任せる）
-- Server / Client Components の使い分けが適切か
-
-### Server Actions / データ取得
-
-- エラーハンドリングが適切か
-
-### セキュリティ
-
-- 秘匿情報が環境変数で管理されているか
-- `server-only` が必要な箇所に付いているか
-
-### メンテナビリティ
-
-- マジックナンバーを使用していないか
-- `any` 型の多用を避けているか
-- コンポーネントが適切に分割されているか
+```tsx
+// TODO: この関数をリファクタリングする
+// NOTE: ここで型チェックが厳密に行われている
+// FIXME: この値が正しくない可能性がある
+```

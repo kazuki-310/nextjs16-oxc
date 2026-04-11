@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
+  { href: "/memos", label: "メモ帳" },
   { href: "/tables", label: "広告レポート" },
   { href: "/tables-virtual", label: "広告レポート（仮想化）" },
 ];
