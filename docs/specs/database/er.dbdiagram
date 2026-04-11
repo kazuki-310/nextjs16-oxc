@@ -55,3 +55,13 @@ Table memos {
 
   Note: '個人用メモ（メモ帳）'
 }
+
+Table focus_tips {
+  id int [pk, increment]
+  body text [not null, note: 'ヒント本文']
+  sort_order int [not null, default: 0, note: '表示順（昇順で並べ、日付剰余で 1 件選択）']
+  created_at datetime [not null, default: `now()`]
+  updated_at datetime [not null]
+
+  Note: '集中ヒントのマスタ（日替わり表示の候補）'
+}
